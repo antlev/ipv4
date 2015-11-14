@@ -196,7 +196,8 @@ main(){
         case 3 :
         if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1 )
         {
-            printf("Sauvegarde des paramètres actuels en mémoire ");
+            printf("************* Sauvegarde des paramètres actuellement en mémoire ************* \n");
+            saveAdress(ipDecInt4,maskDecInt4);
 
 
         } else printf("Vous devez avoir une adresse ip et un masque valide rentré en mémoire pour les sauvegarder\n");
@@ -209,6 +210,15 @@ main(){
         break;
 
         case 5 :
+            printf("****************** Rentrer en mémoire un réseau stocké dans un fichier ******************\n");
+            printf("Quel réseau voulez vous rentrer en mémoire ? \n");
+            printf("Entrer le numéro de réseau correspondant\n");
+            printf("Pour afficher les réseaux actuellement stocké dans un fichier rentrer 0\n");
+            scanf("%d",choixres);
+            if ( choixres == 0 ) { printSaveAdress() ; }
+            else {
+                
+            }
 
         break;
 
@@ -723,9 +733,9 @@ void saveAdress(int IpDecInt4[],int MaskDecInt4[]) {
 
     if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 )
     {
-        perror("Problème d'écriture dans le fichier");
+        perror("Problème d'écriture dans le fichier\n");
     } else {
-        printf("Le réseau n°%d constitué de l'adresse ip %d et du masque %d a bien été sauvegardé dans un fichier \n",Res.numRes,Res.sIpDecInt4,Res.sMaskDecInt4 );
+        printf("Le réseau n°%d constitué de l'adresse ip %d.%d.%d.%d et du masque %d.%d.%d.%d a bien été sauvegardé dans un fichier \n",Res.numRes,Res.sIpDecInt4[0],Res.sIpDecInt4[1],Res.sIpDecInt4[2],Res.sIpDecInt4[3],Res.sMaskDecInt4[0],Res.sMaskDecInt4[1],Res.sMaskDecInt4[2],Res.sMaskDecInt4[3] );
     }
     fclose(PtrFich); // On ferme le fichier
 }
