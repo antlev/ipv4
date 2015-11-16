@@ -44,6 +44,7 @@ void Ad32To4(int binInt32[],int *decInt4); // Todo Transforme une adresse 32 bit
 void Ad4To32(int decInt4[],int *binInt32); // Todo Transforme une adresse  en decimal pointe en 32 bits
 void saveAdress(int IpDecInt4[],int MaskDecInt4[]); // TOTEST
 void printSaveAdress();
+void delSaveAdress(int numRes); // Supprime un réseau donné dans le fichier
 //******************************************-Fonctions-******************************************
 int checkAdress(char char100[],int ipOrMask); // Vérifie la validité de l'adresse
 int checkIfAdressExist(int *decInt4, int ipOrMask); // Check si une adresse (ip ou masque) existe en mémoire
@@ -81,12 +82,13 @@ main(){
         printf("3) Sauvegarder les paramètres en mémoire dans un fichier (ipm)\n");
         printf("4) Afficher les réseaux stockés dans un fichier \n");
         printf("5) Rentrer en mémoire un réseau stocké dans un fichier\n");
+        printf("6) Supprimer un réseau stocké dans un fichier\n");
         printf("-------------------------------------------------------------\n");
-        printf("6) Info réseau actuellement en mémoire (ipm)\n");
-        printf("7) Conversion\n");
-        printf("8) Sous-réseau (ipm)\n");
+        printf("7) Info réseau actuellement en mémoire (ipm)\n");
+        printf("8) Conversion\n");
+        printf("9) Sous-réseau (ipm)\n");
         printf("-------------------------------------------------------------\n");
-        printf("9) Quitter\n");
+        printf("10) Quitter\n");
         printf("************************************************************\n");
         if ( checkIfAdressExist(ipDecInt4,0) == 1 )
         {
@@ -225,6 +227,10 @@ main(){
         break;
 
         case 6 :
+            printf("Supprimer un réseau stocké dans un fichier\n");
+        break;
+
+        case 7 :
             if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1)
             {
               
@@ -274,7 +280,7 @@ main(){
                 printf("Veuillez vérifier ces paramètres svp\n");
             }
         break;
-        case 7 :                    
+        case 8 :                    
         choice = 0;
         while ( choice != 7 )
         {
@@ -327,7 +333,7 @@ main(){
                 case 4 :
                     printf("Quel est le nombre binaire à convertir en décimal?\n");
                     j=valToConv=0;
-                    //demande actuellement chaQUE DIGIT voir cours math pour seoparer les digits
+                    //demande actuellement chaQUE DIGIT voir cours math pour separer les digits
                     // et demander tous dans un seul prompt
                     while ( valToConv == 0 || valToConv == 1 )
                     {
@@ -366,7 +372,7 @@ main(){
             }
         }     
         break;
-        case 8 :
+        case 9 :
         {
             int nbSousRes,nbAdresses,temp2,masquecidr;
             struct SousReseau Adresse[100];
@@ -443,13 +449,13 @@ main(){
             } else { printf("Il faut avoir en mémoire une adresse ip et un masque valide pour avoir cette option\nVeuillez vérifier ces paramètrs svp\n"); }
         }
         break;
-        case 9 :
+        case 10 :
             printf("************************** SORTIE **************************\n");
             printf("Voulez vous vraiment quitter mon programme?? ;(\n");       
-            printf("( 9 ) pour confirmer ;(\n");
+            printf("( 10 ) pour confirmer ;(\n");
             printf("************************************************************\n");
             scanf("%d",&choice);
-            if(choice==9)
+            if(choice==10)
             {
                 sayGoodBye();
             } else break;
@@ -756,12 +762,45 @@ void printSaveAdress(){
     } else 
     {   // Tant que l'on peut lire encore 1 Res de taile struct Reseau dans PtrFich
         while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ) 
-        {   //On affihce une ligne avec le numéro, le nom, le prénom et le salaire de l'employé
+        {   //On affiche les informations contenu dans le fichier
             if ( Res.numRes != -1){
                 printf("\nReseau n° %d\nAdresse IP : %d.%d.%d.%d\nMasque : %d.%d.%d.%d\n",Res.numRes,Res.sIpDecInt4[0],Res.sIpDecInt4[1],Res.sIpDecInt4[2],Res.sIpDecInt4[3],Res.sMaskDecInt4[0],Res.sMaskDecInt4[1],Res.sMaskDecInt4[2],Res.sMaskDecInt4[3] );
             }
         }
         fclose(PtrFich); // On ferme le fichier
+    }
+}
+void delSaveAdress(int numRes) // Supprime un réseau donné dans le fichier
+{ // DOING SUPPRESSION LOGIQUE NON TESTE TODO COMPACTAGE -> SUPPRESSION PHYSIQUE
+    printf("Suppression Logique\n");
+    PtrFich = fopen("reseau.dta","r+"); // On ouvre le fichier PtrFich avec l'option r+ (ecriture/lecture en début de fichier)
+    if ( PtrFich == NULL ) // Si le fichier est vide (ou n'existe pas)
+    {                      // On affiche un message d'erreur
+        perror("Aucun fichier 'reseau.dta' éxiste\n");
+    } else {
+        compteur = 0 ;
+        while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ) // Tant que l'on peut lire encore 1 Res de taile struct Res dans PtrFich
+        {   
+            compteur++; 
+        } 
+        // On positionne le curseur au début + numRes * taille Reseau 
+        //-> le curseur sera postionné devant le reseau à supprimer (note: on commence à numéroter les Reseau à partir de 1)
+        fseek(PtrFich,(numRes-1)*sizeof( struct Reseau),SEEK_SET);
+        if ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) != 1 )  // Si on arrive pas à lire le réseau à supprimer
+        {   // Message d'erreur 
+            printf("Erreur de lecture : Lecture du réseau n° %d a échoué\n", numRes); // On affiche un message d'erreur
+        } else {
+            fseek(PtrFich,-1*sizeof( struct Reseau ),SEEK_CUR); // On redéplace le curseur devant le réseau à modifier
+            Res.numRes = - 1 ; // Sinon on modifie le numéro du réseau à -1 (Supression Logique) 
+            // On essai d'écrire les informations contenu dans Res, de taille struct Reseau, on écrit 1 Res, dans le fichier PtrFich
+            if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ) // On réécris le réseau avec le numéro -1
+            {
+                perror("Problème d'écriture dans le fichier\nLe Fichier n'a pas été modifié");  // Si fwrite  renvoi -1 on met un message d'erreur car 
+            } else {
+                // TODO COMPACTER LE FICHIER
+            }                                                                                   // on a pas écrit dans le fichier
+        }                                                   
+        fclose(PtrFich); // On ferme le fichier ouvert en début de case 2
     }
 }
 //******************************************-Fonctions-******************************************
