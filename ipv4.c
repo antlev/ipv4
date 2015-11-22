@@ -7,12 +7,10 @@
 *   exemple : gcc ipv4v2.1.c -o ipv4v2.1 -lm
 *
 *   TODO : - Problème lorsque l'on rentre une valeur non-valide -> plus possible de rentrer une adresse même valide après
-*          - Revoir les conversions
+*          -  Revoir suppresion réseau dans un fichier
 *          - Sous réseau non fonctionnel
-*          - Enregistrement dans un fichier fonctionnel (manque suppresion de reseaux et 
-*              rentrer un reseau dans un fichier en memoire )
 *          - Probleme masque cidr => pas toujours juste ( a tester et corriger)
-*           - (compile)
+*           - Conversion All Good :)
 */ 
 # include <stdio.h>
 # include <string.h>
@@ -43,7 +41,9 @@ void convAdressBinToDec(int binInt32[],int *decInt4); // Convertit une adresse 3
 void Ad32To4(int binInt32[],int *decInt4); // Todo Transforme une adresse 32 bits en decimal pointe
 void Ad4To32(int decInt4[],int *binInt32); // Todo Transforme une adresse  en decimal pointe en 32 bits
 void saveAdress(int IpDecInt4[],int MaskDecInt4[]); // TOTEST
-void printSaveAdress();
+void returnRes(int numRes,int *ipDecInt4,int *maskDecInt4);
+void printSaveAdress(); // print all save adresses on screen
+void printOneSaveAdress(int adressToPrint); // print the given save adress on screen
 void delSaveAdress(int numRes); // Supprime un réseau donné dans le fichier
 //******************************************-Fonctions-******************************************
 int checkAdress(char char100[],int ipOrMask); // Vérifie la validité de l'adresse
@@ -53,6 +53,7 @@ int calcRange(int maskBinInt32[]); // Calcul le nombre d'ip disponible en foncti
 //******************************************-Main-******************************************
 main(){
     FILE *PtrFich;
+    int resASupp,resAAff;
     int i,j,k,n,numberInt,maskcidr,choice,temp3,valToConv,choixres;
     int ipDecInt4[4],maskDecInt4[4],networkDecInt4[4],firstAdress4[4],lastAdress4[4],nextNetworkDecInt4[4],temp4[4],broadcastAdress4[4],rangeResBroadAd4[4] ;
     int tabBinInt8[8];
@@ -209,25 +210,39 @@ main(){
         break;
 
         case 4 :
-            printf("******************** Adresses Stockées dans le fichier ********************\n");
-            printSaveAdress();
+            printf("Quelle réseau voulez vous afficher ?\n");
+            printf("Entrer 0 pour afficher tous les réseaux\n");
+            scanf("%d",&resAAff);
+            if ( resAAff == 0 ){
+                printSaveAdress();
+            } else {
+                printOneSaveAdress(resAAff);
+            }
+
+
+
         break;
 
         case 5 :
             printf("*** Rentrer en mémoire un réseau stocké dans un fichier ***\n");
-            printf("Quel réseau voulez vous rentrer en mémoire ? \n");
-            printf("Entrer le numéro de réseau correspondant\n");
             printf("Pour afficher les réseaux actuellement stocké dans un fichier rentrer 0\n");
-            scanf("%d",&choixres);
-            if ( choixres == 0 ) { printSaveAdress() ; }
-            else {
-                // TODO
-            }
+            do {
+                printf("Quel réseau voulez vous rentrer en mémoire ? \n");
+                printf("Entrer le numéro de réseau correspondant\n");
+                scanf("%d",&choixres);
+                if ( choixres == 0 ) { printSaveAdress() ; }
 
+            } while ( choixres == 0 );  
+                returnRes(choixres,ipDecInt4,maskDecInt4); // on récupère le réseau voulu
         break;
 
         case 6 :
             printf("Supprimer un réseau stocké dans un fichier\n");
+            printf("Quel réseau voulez vous supprimer ?");
+            scanf("%d",&resASupp);
+            delSaveAdress(resASupp);
+
+
         break;
 
         case 7 :
@@ -311,37 +326,37 @@ main(){
                     }
                     printf("\n");
                 break;
-                // REVOIR CES 3 POINTS
                case 2 :
                     printf("Quel est le nombre décimal à convertir en héxadécimal?\n");
                     scanf("%d",&valToConv);
                     printf("%d vaut %X en héxadécimal\n",valToConv,valToConv);
                 break;
+                    // REVOIR CES 2 POINTS
                 case 3 :
                     printf("Quel est le nombre binaire à convertir en décimal?\n");
                     j=valToConv=0;
-                    //demande actuellement chaQUE DIGIT voir cours math pour seoparer les digits
-                    // et demander tous dans un seul prompt
-                    while ( valToConv == 0 || valToConv == 1 )
+                    scanf("%d",&valToConv);
+                    while ( valToConv > 0 )
                     {
-                        scanf("%d",&valToConv);
-                        binToDec32[j]=valToConv;
+                        binToDec32[j] = valToConv % 10 ;
+                        printf("%d",binToDec32[j] );
                         j++;
+                        valToConv = valToConv / 10 ;
                     }
-                    printf("Votre valeur en décimal : %d\n",binaireToBase10(binToDec32,j));
+                    printf("\nVotre valeur en décimal : %d\n",binaireToBase10(binToDec32,j));
                 break;
                 case 4 :
-                    printf("Quel est le nombre binaire à convertir en décimal?\n");
+                    printf("Quel est le nombre binaire à convertir en héxadécimal?\n");
                     j=valToConv=0;
-                    //demande actuellement chaQUE DIGIT voir cours math pour separer les digits
-                    // et demander tous dans un seul prompt
-                    while ( valToConv == 0 || valToConv == 1 )
+                    scanf("%d",&valToConv);
+                    while ( valToConv > 0 )
                     {
-                        scanf("%d",&valToConv);
-                        binToDec32[j]=valToConv;
+                        binToDec32[j] = valToConv % 10 ;
+                        printf("%d",binToDec32[j] );
                         j++;
+                        valToConv = valToConv / 10 ;
                     }
-                    printf("Votre valeur en héxadécimal : %X\n",binaireToBase10(binToDec32,temp3));
+                    printf("\nVotre valeur en héxadécimal : %X\n",binaireToBase10(binToDec32,j));
                 break; 
                 case 5 :
                     printf("Quel est le nombre hexadécimal à convertir en décimal?\n");
@@ -349,7 +364,6 @@ main(){
                     printf("%X vaut %d en décimal\n",valToConv,valToConv );
                 break;
                 case 6 :
-                // MARCHE PAS
                     printf("Quel est le nombre hexadécimal à convertir en binaire?\n");
                     scanf("%X",&valToConv);
                     while ( valToConv > 255 || valToConv < 0 )
@@ -358,7 +372,7 @@ main(){
                         scanf("%X",&valToConv);
                     }
                     base10ToBinaire(valToConv,tabBinInt8);
-                    for ( j=0 ; j<8 ; j++ )
+                    for ( j=7 ; j>=0 ; j-- )
                     {
                         printf("%d",tabBinInt8[j]);
                     }
@@ -446,7 +460,7 @@ main(){
 
                 }
 
-            } else { printf("Il faut avoir en mémoire une adresse ip et un masque valide pour avoir cette option\nVeuillez vérifier ces paramètrs svp\n"); }
+            } else { printf("Il faut avoir en mémoire une adresse ip et un masque valide pour avoir cette option\nVeuillez vérifier ces paramètres svp\n"); }
         }
         break;
         case 10 :
@@ -745,7 +759,7 @@ void saveAdress(int IpDecInt4[],int MaskDecInt4[]) {
 
     if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 )
     {
-        perror("Problème d'écriture dans le fichier\n");
+        printf("Problème d'écriture dans le fichier\n");
     } else {
         printf("Le réseau n°%d constitué de l'adresse ip %d.%d.%d.%d et du masque %d.%d.%d.%d a bien été sauvegardé dans un fichier \n",Res.numRes,Res.sIpDecInt4[0],Res.sIpDecInt4[1],Res.sIpDecInt4[2],Res.sIpDecInt4[3],Res.sMaskDecInt4[0],Res.sMaskDecInt4[1],Res.sMaskDecInt4[2],Res.sMaskDecInt4[3] );
     }
@@ -758,10 +772,11 @@ void printSaveAdress(){
     PtrFich = fopen("reseau.dta","r"); // On tente d'ouvrir le fichier "reseau.dta" en lecture 
     if ( PtrFich == NULL ) // Si le fichier n'existe pas
     {
-        perror("Le Fichier est vide ou n'existe pas");
+        printf("Le Fichier est vide ou n'existe pas");
     } else 
-    {   // Tant que l'on peut lire encore 1 Res de taile struct Reseau dans PtrFich
-        while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ) 
+    {   
+        printf("******************** Adresses Stockées dans le fichier ********************\n");
+        while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 )  // Tant que l'on peut lire encore 1 Res de taile struct Reseau dans PtrFich
         {   //On affiche les informations contenu dans le fichier
             if ( Res.numRes != -1){
                 printf("\nReseau n° %d\nAdresse IP : %d.%d.%d.%d\nMasque : %d.%d.%d.%d\n",Res.numRes,Res.sIpDecInt4[0],Res.sIpDecInt4[1],Res.sIpDecInt4[2],Res.sIpDecInt4[3],Res.sMaskDecInt4[0],Res.sMaskDecInt4[1],Res.sMaskDecInt4[2],Res.sMaskDecInt4[3] );
@@ -770,13 +785,55 @@ void printSaveAdress(){
         fclose(PtrFich); // On ferme le fichier
     }
 }
+void printOneSaveAdress(int adressToPrint){ // print the given save adress on screen
+    FILE *PtrFich;
+    int pos,j;
+    struct Reseau Res ; // Instanciation d'une structure Reseau  
+    PtrFich = fopen("reseau.dta","r"); // On tente d'ouvrir le fichier "reseau.dta" en lecture 
+    if ( PtrFich == NULL ) // Si le fichier n'existe pas
+    {
+        printf("Le Fichier est vide ou n'existe pas");
+    } else {   
+        if ( fseek(PtrFich,(adressToPrint-1) * sizeof(struct Reseau),SEEK_SET ) == 0 ){ // On se positionne devant le réseau à afficher à l'écran
+            fread(&Res,sizeof(struct Reseau),1,PtrFich );
+            printf("\nReseau n° %d\nAdresse IP : %d.%d.%d.%d\nMasque : %d.%d.%d.%d\n",Res.numRes,Res.sIpDecInt4[0],Res.sIpDecInt4[1],Res.sIpDecInt4[2],Res.sIpDecInt4[3],Res.sMaskDecInt4[0],Res.sMaskDecInt4[1],Res.sMaskDecInt4[2],Res.sMaskDecInt4[3] );
+        } else {
+            printf("Le réseau n°%d n'a pas pu être trouvé dans le fichier\n",adressToPrint );
+        }
+    }
+    fclose(PtrFich); // On ferme le fichier
+}
+void returnRes(int numRes,int *ipDecInt4,int *maskDecInt4){
+    FILE *PtrFich;
+    int pos,j,i;
+    struct Reseau Res ; // Instanciation d'une structure Reseau  
+    PtrFich = fopen("reseau.dta","r"); // On tente d'ouvrir le fichier "reseau.dta" en lecture 
+    if ( PtrFich == NULL ) // Si le fichier n'existe pas
+    {
+        printf("Le Fichier est vide ou n'existe pas");
+    } else {   
+        if ( fseek(PtrFich,(numRes-1) * sizeof(struct Reseau),SEEK_SET ) == 0 ){ // On se positionne devant le réseau à afficher à l'écran
+            fread(&Res,sizeof(struct Reseau),1,PtrFich );
+            for(i=0;i<4;i++){
+                ipDecInt4[i] = Res.sIpDecInt4[i]; // On écrit le réseau lu dans les tableaux passés en paramètres de la procédure
+                maskDecInt4[i] = Res.sMaskDecInt4[i];
+            }
+        } else {
+            printf("Le réseau n°%d n'a pas pu être trouvé dans le fichier\n",numRes );
+        }   
+    }
+    fclose(PtrFich); // On ferme le fichier
+}
 void delSaveAdress(int numRes) // Supprime un réseau donné dans le fichier
 { // DOING SUPPRESSION LOGIQUE NON TESTE TODO COMPACTAGE -> SUPPRESSION PHYSIQUE
+    FILE *PtrFich;
+    int compteur,compteur2;
+    struct Reseau Res ; // Instanciation d'une structure Reseau  
     printf("Suppression Logique\n");
     PtrFich = fopen("reseau.dta","r+"); // On ouvre le fichier PtrFich avec l'option r+ (ecriture/lecture en début de fichier)
     if ( PtrFich == NULL ) // Si le fichier est vide (ou n'existe pas)
     {                      // On affiche un message d'erreur
-        perror("Aucun fichier 'reseau.dta' éxiste\n");
+        printf("Aucun fichier 'reseau.dta' éxiste\n");
     } else {
         compteur = 0 ;
         while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ) // Tant que l'on peut lire encore 1 Res de taile struct Res dans PtrFich
@@ -795,14 +852,35 @@ void delSaveAdress(int numRes) // Supprime un réseau donné dans le fichier
             // On essai d'écrire les informations contenu dans Res, de taille struct Reseau, on écrit 1 Res, dans le fichier PtrFich
             if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ) // On réécris le réseau avec le numéro -1
             {
-                perror("Problème d'écriture dans le fichier\nLe Fichier n'a pas été modifié");  // Si fwrite  renvoi -1 on met un message d'erreur car 
+                printf("Problème d'écriture dans le fichier\nLe Fichier n'a pas été modifié");  // Si fwrite  renvoi -1 on met un message d'erreur car 
             } else {
-                // TODO COMPACTER LE FICHIER
-            }                                                                                   // on a pas écrit dans le fichier
+                            
+
+
+                printf("Compacter le fichier \n");
+       
+                compteur = 0 ; // On initialise les numéros à redonner aux réseaux
+                while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ) // Tant que l'on peut lire encore 1 Res de taile struct Reseau dans PtrFich
+                {   
+                    if ( Res.numRes != -1 )
+                    {
+                        compteur++;  // On incrémente que si le réseau n'existe pas 
+                    } else {
+                        compteur2++;  // Sinon on incrémente un deuxième compteur pour avoir le trop plein de réseaux à supprimer
+                    }
+                    Res.numRes = compteur ; 
+                    // On essai d'écrire les informations contenu dans Res, de taille struct Reseau, on écrit 1 Res, dans le fichier PtrFich
+                    if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ) // On réécris l'employé avec le matricule -1
+                    {
+                        printf("Erreur d'écriture : oups! il y a eu un problème lors du compactage du fichier\n");  // Si fwrite  renvoi -1 on met un message d'erreur car 
+                    }   
+                } 
+            }
+            printf("Fin du compactage du fichier\n");
+            }                                                                                   
         }                                                   
-        fclose(PtrFich); // On ferme le fichier ouvert en début de case 2
+        fclose(PtrFich); // On ferme le fichier ouvert 
     }
-}
 //******************************************-Fonctions-******************************************
 int checkAdress(char char100[], int ipOrMask){ // Vérifie la validité de l'adresse
     int j,a=0,numberInt,compteur,octetOk,coupure=0 ;           // est valide : renvoie 1 si valide, 0 sinon
@@ -905,7 +983,6 @@ int binaireToBase10(int binInt[],int bit)
        if ( binInt[j] == 1 )
         {
             res = res + (int) pow(2,n);
-
         }
         n++;
     }
