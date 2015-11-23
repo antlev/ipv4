@@ -394,13 +394,15 @@ main(){
             {
                 masqueBin[j] = 1 ;
             }
-            int nbAdressesTot,nbAdressesPossible ;
+            int nbAdressesTot;
+            double nbAdressesPossible ;
             nbAdressesTot = 0 ;
             if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1)
             {
                 for ( j = 0 ; j < 4 ; j++ )
                 {
                     rangeResBroadAd4[j] = networkDecInt4[j] ;
+                    printf("rangeResBroadAd4[%d] = %d\n",j,rangeResBroadAd4[j] );
                 }
 
                 printf("************************* SOUS-RESEAU ************************\n");
@@ -411,48 +413,87 @@ main(){
                 {
                     printf("Combien d'adresses doit contenir le sous-réseau n° %d ?\n",j+1 );
                     scanf("%d",&nbAdresses);
+                    nbAdresses += 2 ; // On ajoute l'adresse de broadcast et réseau à prendre en compte
+                    if ( j > 0 ){
+                        if( nbAdresses > nbAdressSousRes[j-1] ){
+                            printf("Vous venez de saisir un sous-réseau plus grand que le précédent :o\n");
+                            printf("Il est impératif de saisir les sous-réseaux du plus grand au plus petit\n");
+                            j = -1 ;
+                        }
+                    }
                     nbAdressSousRes[j] = nbAdresses ;
-                    nbAdressesTot += nbAdresses ;
+                    temp2 = 2 ;
+                    while ( nbAdresses > 1 ){
+                        temp2 *= 2 ;
+                        nbAdresses = nbAdresses/2 ;
+                    }
+                    nbAdressesTot += temp2 ;
                 }
-                printf("sort\n");
+                for( j = 0 ; j < nbSousRes ; j++ ) {
+                }
+                printf("\n");
+                temp2 = 0 ;
                 for( j = 31 ; j >= 0 ; j-- )
-                {
+                {   
                     if ( maskBinInt32[j] == 0 )
                     {
                         temp2++ ;
                     } else break ;
                 }
                 nbAdressesPossible = pow(2,temp2);
+                printf("nbAdressesPossible = %f\n",nbAdressesPossible );
                 if ( nbAdressesPossible < nbAdressesTot + 2 * nbSousRes)
                 {
                     printf("Vous ne pouvez pas rentrer autant d'adresses étant donnée votre plage\n");
-                    printf("Votre plage vous permet de dispser de %d \n",nbAdressesPossible );
+                    printf("Votre plage vous permet de dispser de %f \n",nbAdressesPossible );
                     printf("Rappel : chaque sous-réseau nécessite de deux adresses supplémentaire (réseau et broadcast)\n");
                 } else
                 { 
-                    masquecidr = 32;
+                    masquecidr = 31;
                     for ( j = 0 ; j < nbSousRes ; j++ )
                     {
                         while ( nbAdressSousRes[j] > 1 )                      
                         {
+                                printf("nbAdressSousRes[%d] = %d \n",j,nbAdressSousRes[j] );
+                                printf("masquecidr = %d\n",masquecidr );
                                 nbAdressSousRes[j] /= 2 ;
                                 masquecidr-- ;
                         }
                         Adresse[j].masquecidr = masquecidr ;
-                        for ( k = 32 ; k >= masquecidr ; k-- )
+                        for ( k = 31 ; k >= masquecidr ; k-- )
                         {
                             masqueBin[k] = 0;
-                            printf("%d",masqueBin[k] );
+                            printf("masqueBin[%d] = %d",k,masqueBin[k] );
                         }
 
                         //Calcul de la plage réservée
-                        printf("7\n");
+                        printf("\n");
                       
-                        calcNextAdress(rangeResBroadAd,rangeResNetworkAd);
-                        calcNextNetwork(rangeResNetworkAd,masqueBin,rangeResBroadAd);
+                        calcNextAdress(rangeResBroadAd4,rangeResNetworkAd);
+                        printf("nextAdress\n");
+                        for(i=0;i<4;i++){
+                            printf("rangeResBroadAd4 = %d\n",rangeResBroadAd4[i] );
+                        }
+                        for(i=0;i<4;i++){
+                            printf("rangeResNetworkAd =%d\n",rangeResNetworkAd[i] );                            
+                        }
+                        // revoir calcNextNetwork
+                        calcNextNetwork(rangeResNetworkAd,masqueBin,rangeResBroadAd4);
+                        
+                        printf("nextNetwork\n");
+                        for(i=0;i<4;i++){
+                            printf("rangeResBroadAd4 = %d\n",rangeResBroadAd4[i] );
+                        }
+                        for(i=0;i<4;i++){
+                            printf("rangeResNetworkAd =%d\n",rangeResNetworkAd[i] );                            
+                        }for(i=0;i<32;i++){
 
+                            printf("masqueBin = %d\n",masqueBin[i] );
+
+                        }
+                        printf("res\n");
                         printAdress4(rangeResNetworkAd);
-                        printAdress4(rangeResBroadAd);
+                        printAdress4(rangeResBroadAd4);
 
 
                     }
