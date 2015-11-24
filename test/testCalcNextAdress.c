@@ -60,7 +60,7 @@ int main(){
     return 0;
 
 }
-void calcNextAdress(int baseDecInt4[],int *nextAdress4) // TODO Rempli un tableau decPoint4 de la première adresse ip de la plage
+void calcNextAdress(int baseDecInt4[],int *nextAdress4) 
 {
     int j;
     for( j=0 ; j<4 ; j++ )
