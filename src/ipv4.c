@@ -39,7 +39,7 @@ void memNetworkAdresse(int ipBinInt32[],int ipDecInt4[],int maskBinInt32[],int m
 void printAdress4(int decInt4[]); // Affiche une adresse en decimal pointé
 void printAdress32(int binInt32[]); // Affiche une adresse en binaire
 void base10ToBinaire(int n, int *binInt8); // Prend une valeur n compris entre 0 et 255 et la stock sous forme binaire dans un tableau de 8 cases
-void calcNextAdress(int networkBinInt32[],int *firstAdress4); // TODO Rempli un tableau decPoint4 de la première adresse ip de la plage
+void calcNextAdress(int networkBinInt32[],int *nextAdress4); // TODO Rempli un tableau decPoint4 de la première adresse ip de la plage
 void calcPreviousAdress(int networkBinInt32[],int *lastAdress4); // TODO Rempli un tableau decPoint4 de la dernière adresse ip de la plage
 void calcNextNetwork(int networkBinInt32[],int maskBinInt32[],int *nextNetworkBinInt32,int *nextNetworkDecInt4); // Prend en entrée l'adresse reseau et le masque et rempli les tableaux nextNetworkDecInt4 et nextNetworkBinInt32
 void convAdressBinToDec(int binInt32[],int *decInt4); // Convertit une adresse 32 bits en decimal pointé
@@ -61,24 +61,21 @@ main(){
     FILE *PtrFich;
     int resASupp,resAAff;
     int i,j,k,n,numberInt,maskcidr,choice,temp3,valToConv,choixres;
-    int ipDecInt4[4],maskDecInt4[4],networkDecInt4[4],firstAdress4[4],lastAdress4[4],nextNetworkDecInt4[4],temp4[4],broadcastAdress4[4],rangeResBroadAd4[4] ;
+    int ipDecInt4[4],maskDecInt4[4],networkDecInt4[4],firstAdress4[4],lastAdress4[4],nextNetworkDecInt4[4],broadDecInt4[4],masqueDec4[4] ;
     int tabBinInt8[8];
-    int ipBinInt32[32],maskBinInt32[32],networkBinInt32[32],nextNetworkBinInt32[32],nbAdressSousRes[100],masqueBin32[32],rangeResNetworkAd32[32],rangeResBroadAd32[32],binToDec32[32];
-    int AdresseSousReseau[32][32];
-    int rangeResNetworkAd4[4];
-    char ipChar100[100],masqueChar100[100],temp[4];
+    int ipBinInt32[32],maskBinInt32[32],networkBinInt32[32],nextNetworkBinInt32[32],nbAdressSousRes[100],masqueBin32[32],binToDec32[32];
+    int sousResNetworkDecInt4[4],sousResFirstDecInt4[4],sousResLastDecInt4[4],sousResBroadDecInt4[4],sousResNextNetworkDecInt4[4];
+    int sousResNetworkBinInt32[32],sousResFirstBinInt32[32],sousReslastBinInt32[32],sousResBroadBinInt32[32],sousResNextNetworkBinInt32[32];
+    char ipChar100[100],masqueChar100[100],temp4[4];
     char point=0; // Permet de verifier la structure de l'adresse ip donnée
-    for( j=0 ; j<4 ; j++ ) // Initialisation des tableaux ip et masque à 0;
-    {
+    for( j=0 ; j<4 ; j++ ){ // Initialisation des tableaux ip et masque à 0;
         ipDecInt4[j] = maskDecInt4[j] = 0;
     }
-    for ( j=0 ; j<32 ; j++)
-    {
+    for ( j=0 ; j<32 ; j++){
         ipBinInt32[j] = maskBinInt32[j] = 0 ;
     }
     sayHello();
-    while (choice != 9)
-    {
+    while (choice != 9){
         printf("\n");
         printf("********************** MENU PRINCIPAL **********************\n");
         printf("Entrez une valeur correspondant a votre choix :\n");
@@ -96,18 +93,15 @@ main(){
         printf("-------------------------------------------------------------\n");
         printf("10) Quitter\n");
         printf("************************************************************\n");
-        if ( checkIfAdressExist(ipDecInt4,0) == 1 )
-        {
+        if ( checkIfAdressExist(ipDecInt4,0) == 1 ){
             printf("ip actuellement en mémoire :     ");
             printAdress4(ipDecInt4);
         } else printf("Aucune adresse ip n'est actuellement en mémoire\n");
-        if ( checkIfAdressExist(maskDecInt4,1) == 1 )
-        {
+        if ( checkIfAdressExist(maskDecInt4,1) == 1 ){
             printf("Masque actuellement en mémoire : ");
             printAdress4(maskDecInt4) ;
         } else printf("Aucun masque n'est actuellement en mémoire\n");
-        if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1 )
-        {
+        if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1 ){
             memNetworkAdresse(ipBinInt32,ipDecInt4,maskBinInt32,maskDecInt4,networkBinInt32,networkDecInt4);
             printf("Adresse réseau calculée :        ");
             printAdress4(networkDecInt4);
@@ -117,8 +111,7 @@ main(){
         switch (choice){
         case 1 :
         printf("****************** Saisie de l'adresse IP ******************\n");
-        if ( checkIfAdressExist(ipDecInt4,0) == 1 )
-        {
+        if ( checkIfAdressExist(ipDecInt4,0) == 1 ) {
             printf("Adresse ip actuellement en mémoire\n");
             printAdress4(ipDecInt4);
         } else { printf("Aucune adresse ip n'est rentrée en mémoire\n");}
@@ -126,8 +119,7 @@ main(){
             printf("Veuillez saisir une adresse IP\n");
             scanf("%s",ipChar100); // On demande une ip que l'on stock dans char100
             n = checkAdress(ipChar100,0) ; // On vérifie la validité de l'ip
-            if ( n == 1 )
-            {
+            if ( n == 1 ){
                 printf("Adresse IP valide\n");
                 memAdress(ipChar100,ipDecInt4,ipBinInt32,0); // Si l'ip est valide on sauvegarde l'ip donné dans le tableau ipDecInt4
             }
@@ -141,8 +133,7 @@ main(){
         switch (choice){
             case 1 :
             printf("************* Saisie du masque : Format Adresse *************\n");
-            if ( checkIfAdressExist(maskDecInt4,1) == 1 )
-            {
+            if ( checkIfAdressExist(maskDecInt4,1) == 1 ){
                 printf("Masque actuellement en mémoire :\n");
                 printAdress4(maskDecInt4) ;
             } else { printf("Aucun masque n'est actuellement rentré en mémoire\n") ; }
@@ -150,8 +141,7 @@ main(){
             do{
                 scanf("%s",masqueChar100); // On demande un masque que l'on stock dans masqueChar100
                 n = checkAdress(masqueChar100,1) ; // On vérifie la validité du masque
-                if ( n == 1 )
-                {
+                if ( n == 1 ){
                     printf("Masque valide\n");
                     memAdress(masqueChar100,maskDecInt4,maskBinInt32,1); // Si l'ip est valide on sauvegarde l'ip donné dans le tableau ipDecInt4
                 }
@@ -159,8 +149,7 @@ main(){
             break;
             case 2 :     
             printf("************** Saisie du masque : Format CIDR **************\n");
-            if ( checkIfAdressExist(maskDecInt4,1) == 1 )
-            {
+            if ( checkIfAdressExist(maskDecInt4,1) == 1 ){
                 printf("Masque actuellement en mémoire :\n");
                 printAdress4(maskDecInt4) ;
             }
@@ -169,28 +158,24 @@ main(){
             scanf("%d",&maskcidr);
             if ( maskcidr <= 0 || maskcidr > 31 ) printf("La valeur cidr du masque doit être comprise entre 0 et 32\n");
 
-            while ( maskcidr < 1 || maskcidr > 31 )
-            {
+            while ( maskcidr < 1 || maskcidr > 31 ){
                 printf("Veuillez resaisir un masque en format cidr\n");
                 scanf("%d",&maskcidr);
                 if ( maskcidr <= 0 || maskcidr > 31 ) printf("La valeur cidr du masque doit être comprise entre 0 et 32\n");
             }
             if ( maskcidr == 31 ) printf("Note : Vous vous appretez à rentrer un masque ayant qu'un seul bit à 0\nLe réseau correspondant ne pourra comporter qu'une seul adresse ip\n");
             i = 0;
-            while ( maskcidr != 0 )                       // maskcidr représente le nombre de 1 dans le masque
-            {                                               //
+            while ( maskcidr != 0 ){                      // maskcidr représente le nombre de 1 dans le masque                                           
                if (maskcidr >= 8 )                        // Tant que l'on a plus de 8 bit à 1 dans le masque
                {                                            //
                        maskDecInt4[i] = 255;         // => on remplis un octet de 1 soit 255 en décimal
-                       for( k=i*8 ; k<i*8+8 ; k++ )
-                       {
+                       for( k=i*8 ; k<i*8+8 ; k++ ){
                             maskBinInt32[k] = 1 ;
                        }
                        maskcidr -= 8;                     // On retire les 8 bits à 1
                        i++;                                 // On avance d'un octet
                } else {                                     // Si il reste mois de 8 bits à 1
-                       for ( j=0 ; j<maskcidr ; j++ )     // on rentre 2⁷ pour le premier bit puis 2⁶ puis 2⁵ etc...
-                       {
+                       for ( j=0 ; j<maskcidr ; j++ ){    // on rentre 2⁷ pour le premier bit puis 2⁶ puis 2⁵ etc...
                            maskDecInt4[i] += pow(2,(7-j));
                            maskBinInt32[i*8+j] = 1 ;
                        }
@@ -204,8 +189,7 @@ main(){
         }
         break; 
         case 3 :
-        if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1 )
-        {
+        if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1 ){
             printf("************* Sauvegarde des paramètres actuellement en mémoire ************* \n");
             saveAdress(ipDecInt4,maskDecInt4);
 
@@ -251,28 +235,24 @@ main(){
         break;
 
         case 7 :
-            if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1)
-            {
-              
+            if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1){  
                 printf("------------------------ Info réseau ------------------------\n");
                 // CALCUL DES ADRESSES
                 calcNextNetwork(networkBinInt32,maskBinInt32,nextNetworkBinInt32,nextNetworkDecInt4); // PROCHAIN RESEAU EN BINAIRE
                 convAdressBinToDec(nextNetworkBinInt32,nextNetworkDecInt4); // CONVERSION PROCHAIN RESEAU EN DECIMAL POINTE
                 calcNextAdress(networkDecInt4,firstAdress4); // CALCUL DE LA PREMIERE ADRESSE IP DISPONIBLE
-                calcPreviousAdress(nextNetworkDecInt4,broadcastAdress4); // CALCUL DE L ADRESSE DE BROADCAST
-                calcPreviousAdress(broadcastAdress4,lastAdress4); // CALCUL DE LA DERNIERE ADRESSE IP DISPONIBLE
+                calcPreviousAdress(nextNetworkDecInt4,broadDecInt4); // CALCUL DE L ADRESSE DE BROADCAST
+                calcPreviousAdress(broadDecInt4,lastAdress4); // CALCUL DE LA DERNIERE ADRESSE IP DISPONIBLE
 
                 // AFFICHAGE DES ADRESSES
                 printf("************************ En binaire ************************\n");
                 printf("Adresse ip : ");
-                for ( j=0 ; j<32 ; j++ )
-                {
+                for ( j=0 ; j<32 ; j++ ){
                     printf("%d", ipBinInt32[j]);
                     if ( j == 7 || j == 15 || j == 23 ) { printf("."); }
                 }
                 printf("\nMasque     : ");
-                for ( j=0 ; j<32 ; j++ )
-                {
+                for ( j=0 ; j<32 ; j++ ){
                     printf("%d", maskBinInt32[j]);
                     if ( j == 7 || j == 15 || j == 23 ) { printf("."); }
                 }
@@ -291,7 +271,7 @@ main(){
                 printf("Dernière adresse ip disponible   : ");
                 printAdress4(lastAdress4);
                 printf("Adresse de broadcast             : "); 
-                printAdress4(broadcastAdress4);
+                printAdress4(broadDecInt4);
                 printf("Prochain réseau                  : ");  
                 printAdress4(nextNetworkDecInt4);
                 printf("--------------------------------------------------------------\n\n");
@@ -302,8 +282,7 @@ main(){
         break;
         case 8 :                    
         choice = 0;
-        while ( choice != 7 )
-        {
+        while ( choice != 7 ){
         printf("************************ Conversion ************************\n");
         printf("1) Conversion d'un nombre décimal en binaire\n");
         printf("2) Conversion d'un nombre décimal en héxadécimal\n");
@@ -317,16 +296,14 @@ main(){
                 case 1 :
                     printf("Quel est le nombre décimal à convertir en binaire?\n");
                     scanf("%d",&valToConv);
-                    while ( valToConv > 255 || valToConv < 0 )
-                    {
+                    while ( valToConv > 255 || valToConv < 0 ){
                         printf("Veuillez rentrer une valeur comprise entre 0 et 255\n");
                         scanf("%d",&valToConv);
                     }
                     printf("Votre valeur décimale : %d\n", valToConv);
                     printf("Conversion : " );
                     base10ToBinaire(valToConv,tabBinInt8);
-                    for ( j=0 ; j<8 ; j++ )
-                    {
+                    for ( j=0 ; j<8 ; j++ ){
                         printf("%d",tabBinInt8[j]);
                     }
                     printf("\n");
@@ -341,8 +318,7 @@ main(){
                     printf("Quel est le nombre binaire à convertir en décimal?\n");
                     j=valToConv=0;
                     scanf("%d",&valToConv);
-                    while ( valToConv > 0 )
-                    {
+                    while ( valToConv > 0 ){
                         binToDec32[j] = valToConv % 10 ;
                         j++;
                         valToConv = valToConv / 10 ;
@@ -353,8 +329,7 @@ main(){
                     printf("Quel est le nombre binaire à convertir en héxadécimal?\n");
                     j=valToConv=0;
                     scanf("%d",&valToConv);
-                    while ( valToConv > 0 )
-                    {
+                    while ( valToConv > 0 ){
                         binToDec32[j] = valToConv % 10 ;
                         printf("%d",binToDec32[j] );
                         j++;
@@ -370,14 +345,12 @@ main(){
                 case 6 :
                     printf("Quel est le nombre hexadécimal à convertir en binaire?\n");
                     scanf("%X",&valToConv);
-                    while ( valToConv > 255 || valToConv < 0 )
-                    {
+                    while ( valToConv > 255 || valToConv < 0 ){
                         printf("Veuillez rentrer une valeur comprise entre 0 et 255\n");
                         scanf("%X",&valToConv);
                     }
                     base10ToBinaire(valToConv,tabBinInt8);
-                    for ( j=0 ; j<8 ; j++ )
-                    {
+                    for ( j=0 ; j<8 ; j++ ){
                         printf("%d",tabBinInt8[j]);
                     }
                     printf("\n");
@@ -398,20 +371,13 @@ main(){
             int nbAdressesTot;
             double nbAdressesPossible ;
             nbAdressesTot = 0 ;
-            if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1)
-            {
-                for ( j = 0 ; j < 4 ; j++ )
-                {
-                    rangeResBroadAd4[j] = networkDecInt4[j] ;
-                    printf("rangeResBroadAd4[%d] = %d\n",j,rangeResBroadAd4[j] );
-                }
+            if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(maskDecInt4,1) == 1){
 
                 printf("************************* SOUS-RESEAU ************************\n");
                 printf("Combien de sous-réseaux souhaitez vous créer ?\n");
                 scanf("%d",&nbSousRes);
                 printf("Veuillez rentrer les sous réseau souhaité du PLUS GRAND au PLUS PETIT\n");
-                for( j = 0 ; j < nbSousRes ; j++ )
-                {
+                for( j = 0 ; j < nbSousRes ; j++ ){
                     printf("Combien d'adresses doit contenir le sous-réseau n° %d ?\n",j+1 );
                     scanf("%d",&nbAdresses);
                     nbAdresses += 2 ; // On ajoute l'adresse de broadcast et réseau à prendre en compte
@@ -430,82 +396,73 @@ main(){
                     nbAdressSousRes[j] = temp2;
                     nbAdressesTot += temp2 ;
                 }
-                for( j = 0 ; j < nbSousRes ; j++ ) {
-                }
                 printf("\n");
 
                 //Calcul du nombre d'adresses possible
                 temp2 = 0 ;
-                for( j = 31 ; j >= 0 ; j-- )
-                {   
-                    if ( maskBinInt32[j] == 0 )
-                    {
+                for( j = 31 ; j >= 0 ; j-- ){   
+                    if ( maskBinInt32[j] == 0 ){
                         temp2++ ;
                     } else break ;
                 }
                 nbAdressesPossible = pow(2,temp2);
                 printf("nbAdressesPossible = %f\n",nbAdressesPossible );
-                if ( nbAdressesPossible < nbAdressesTot ) // Comparaison du nombre d'adresses possible avec le nombre d'adresses total
-                {
+                if ( nbAdressesPossible < nbAdressesTot ){ // Comparaison du nombre d'adresses possible avec le nombre d'adresses total
                     printf("Vous ne pouvez pas rentrer autant d'adresses étant donnée votre plage\n");
                     printf("Votre plage vous permet de dispser de %f \n",nbAdressesPossible );
                     printf("Rappel : chaque sous-réseau nécessite de deux adresses supplémentaire (réseau et broadcast)\n");
-                } else
-                { 
-                    masquecidr = 31;
-                    for ( j = 0 ; j < nbSousRes ; j++ )
-                    {
-                        while ( nbAdressSousRes[j] > 1 )                      
-                        {
+                } else { 
+                    for ( j = 0 ; j < 4 ; j++ ){
+                        sousResNetworkDecInt4[j] = networkDecInt4[j] ;
+                    }
+                    for ( j = 0 ; j < nbSousRes ; j++ ){   
+                        masquecidr = 31;
+                        printf("test\n");
+                        for ( k = 0 ; k < 32 ; k++ ){
+                            masqueBin32[k] = 1 ;
+                            printf("test2\n");
+                        }
+                        while ( nbAdressSousRes[j] > 1 ){
                                 printf("nbAdressSousRes[%d] = %d \n",j,nbAdressSousRes[j] );
                                 printf("masquecidr = %d\n",masquecidr );
                                 nbAdressSousRes[j] /= 2 ;
-                                masquecidr-- ;
+                                masqueBin32[31-j] ;
+                                masquecidr--;
                         }
                         SousRes.masquecidr = masquecidr ;
-                        for ( j = 0 ; j < masquecidr ; j++ )
-                        {
-                            masqueBin32[j] = 1 ;
-                        }
-                        for ( k = 31 ; k >= masquecidr ; k-- )
-                        {
-                            masqueBin32[k] = 0;
-                            printf("masqueBin32[%d] = %d",k,masqueBin32[k] );
-                        }
 
                         //Calcul de la plage réservée
                         printf("\n");
+                        printf("Adresse Reseau du sous réseau %d = ",j);
+                        printAdress4(sousResNetworkDecInt4);
+                    
+                        calcNextAdress(sousResNetworkDecInt4,sousResFirstDecInt4);
 
+                        printf("1ere adresse réseau de la plage du réseau %d : ",j);                          
+                        printAdress4(sousResFirstDecInt4);
 
-                      
-                        calcNextAdress(rangeResBroadAd4,rangeResNetworkAd4);
-                        for(i=0;i<4;i++){
-                            printf("rangeResBroadAd4 = %d\n",rangeResBroadAd4[i] );
-                        }
-                        for(i=0;i<4;i++){
-                            printf("rangeResNetworkAd4 =%d\n",rangeResNetworkAd4[i] );                            
-                        }
-                        // revoir calcNextNetwork
-                        calcNextNetwork(rangeResNetworkAd4,masqueBin32,rangeResBroadAd32,rangeResBroadAd4);
-                        
+                        calcNextNetwork(sousResNetworkDecInt4,masqueBin32,sousResNextNetworkBinInt32,sousResNextNetworkDecInt4);
                         printf("nextNetwork\n");
-                        for(i=0;i<4;i++){
-                            printf("rangeResBroadAd4 = %d\n",rangeResBroadAd4[i] );
+
+                        calcPreviousAdress(sousResNextNetworkDecInt4,sousResBroadDecInt4);
+                        printf("Dernière adresse utilisable du réseau %d : ", j);
+                        printAdress4(sousResBroadDecInt4);
+                        calcPreviousAdress(sousResBroadDecInt4,sousResLastDecInt4);
+                        printf("Adresse de broadcast du réseau %d ",j );
+                        printAdress4(sousResLastDecInt4);
+
+                        printf("masque du réseau %d en binaire : ",j );
+                        printAdress32(masqueBin32);
+                        Ad32To4(masqueBin32,masqueDec4);
+                        printf("Masque du sous-réseau %d en décimal pointé :  ",j );
+                        printAdress4(masqueDec4);
+
+                        for(k=0;k<32;k++){
+                            sousResNextNetworkDecInt4[k] = networkDecInt4[k];
                         }
-                        for(i=0;i<4;i++){
-                            printf("rangeResNetworkAd4 =%d\n",rangeResNetworkAd4[i] );                            
-                        }for(i=0;i<32;i++){
-
-                            printf("masqueBin32 = %d\n",masqueBin32[i] );
-
-                        }
-                        printf("res\n");
-                        printAdress4(rangeResNetworkAd4);
-                        printAdress4(rangeResBroadAd4);
-
 
                     }
-                    printf("9\n");
+                    printf("\n");
 
                 }
 
@@ -518,8 +475,7 @@ main(){
             printf("( 10 ) pour confirmer ;(\n");
             printf("************************************************************\n");
             scanf("%d",&choice);
-            if(choice==10)
-            {
+            if(choice==10){
                 sayGoodBye();
             } else break;
         return;
@@ -563,39 +519,31 @@ void error(int code){
         break;
     }
 }
-int checkIfAdressExist(int *decInt4,int ipOrMask) // Check si une adresse (ip ou masque) existe en mémoire
-{
+int checkIfAdressExist(int *decInt4,int ipOrMask){ // Check si une adresse (ip ou masque) existe en mémoire
     int j;
-    for ( j=0 ; j<4 ; j++ ) // On regarde si une adresse existe en mémoire
-    {   // Si oui on renvoie 1
-        if ( decInt4[j] != 0 ) { return 1 ; }
+    for ( j=0 ; j<4 ; j++ ){ // On regarde si une adresse existe en mémoire
+        if ( decInt4[j] != 0 ) { return 1 ; } // Si oui on renvoie 1
         else if ( j == 3 ) { return 0 ; }        
     }
 }
-void memAdress(char char100[], int *decInt4,int *binInt32, int ipOrMask) // Enregistre l'adresse saisie dans char100 dans decInt4 et binInt32
-{
+void memAdress(char char100[], int *decInt4,int *binInt32, int ipOrMask){ // Enregistre l'adresse saisie dans char100 dans decInt4 et binInt32
     int j,k,a=0,numberInt ;
     int binInt8[8];
     char temp[3];
     char point=0; // Permet de verifier la structure de l'adresse ip donnée
-    for( j=0 ; j <= strlen(char100) ; j++ ) // On parcourt le tableau...
-    {
-            if( char100[j] != '.' && char100[j] != '\0' ) // ... si on ne trouve pas de point ni la fin du tableau
-            {
+    for( j=0 ; j <= strlen(char100) ; j++ ){ // On parcourt le tableau...
+            if( char100[j] != '.' && char100[j] != '\0' ){ // ... si on ne trouve pas de point ni la fin du tableau
                 temp[a] = char100[j]    ;    // on stock la valeur de l'char100 de j dans une vaariable temp
             }
-            else if ( ( char100[j] == '.' || char100[j] == '\0' ) && point < 4 ) // ... si on trouve un point ou la fin du tableau
-            {
+            else if ( ( char100[j] == '.' || char100[j] == '\0' ) && point < 4 ){ // ... si on trouve un point ou la fin du tableau
                 numberInt = atoi(temp)    ; // on ressort la valeur numérique contenue dans temp
                 temp[0]=0;
                 a=-1; // On réinitialise temp et son compteur
                 temp[1]=temp[2]='\0';
-                if ( numberInt >= 0 && numberInt < 256)  // On vérifie que la valeur contenue maintenant dans
-                {                                        // numberInt ne dépasse pas les limites
-                    decInt4[point] = numberInt;
+                if ( numberInt >= 0 && numberInt < 256){ // On vérifie que la valeur contenue maintenant dans
+                    decInt4[point] = numberInt;          // numberInt ne dépasse pas les limites
                     base10ToBinaire(numberInt,binInt8);
-                    for ( k=0 ; k<8 ; k++ )
-                    {
+                    for ( k=0 ; k<8 ; k++ ){
                         binInt32[point*8+k] = binInt8[k];
                     }
                     point++;
@@ -603,17 +551,14 @@ void memAdress(char char100[], int *decInt4,int *binInt32, int ipOrMask) // Enre
             }
             a++; // a permet d'avoir un compteur pour le tableau temp   
     }
-    if ( ipOrMask == 0 )
-    {
+    if ( ipOrMask == 0 ){
         printf("Sauvegarde de l'adresse ip %d.%d.%d.%d en mémoire \n",decInt4[0],decInt4[1],decInt4[2],decInt4[3]);
     }
-    if ( ipOrMask == 1 )
-    {
+    if ( ipOrMask == 1 ){
         printf("Sauvegarde du masque %d.%d.%d.%d en mémoire \n",decInt4[0],decInt4[1],decInt4[2],decInt4[3]);
     }
 }
-void memNetworkAdresse(int ipBinInt32[],int ipDecInt4[],int maskBinInt32[],int maskDecInt4[], int *networkBinInt32, int *networkDecInt4)
-{
+void memNetworkAdresse(int ipBinInt32[],int ipDecInt4[],int maskBinInt32[],int maskDecInt4[], int *networkBinInt32, int *networkDecInt4){
     int j;
     for ( j=0 ; j<32 ; j++ )
     {
@@ -624,13 +569,11 @@ void memNetworkAdresse(int ipBinInt32[],int ipDecInt4[],int maskBinInt32[],int m
        networkDecInt4[j] = ipDecInt4[j] & maskDecInt4[j] ;  // Et Logique entre l'adresse ip et le masque =  adresse reseau
     }
 }
-void printAdress4(int decInt4[])
-{
+void printAdress4(int decInt4[]){
     printf("%d.%d.%d.%d\n", decInt4[0],decInt4[1],decInt4[2],decInt4[3]);
         
 }
-void printAdress32(int binInt32[])
-{
+void printAdress32(int binInt32[]){
     int j;
     for ( j=0 ; j<32 ; j++ )
     {
@@ -639,70 +582,55 @@ void printAdress32(int binInt32[])
     }
     printf("\n");
 } 
-void base10ToBinaire(int n, int *binInt8) // Prend une valeur n compris entre 0 et 255 et la stock sous forme binaire dans un tableau de 8 cases
-{
+void base10ToBinaire(int n, int *binInt8){ // Prend une valeur n compris entre 0 et 255 et la stock sous forme binaire dans un tableau de 8 cases
     int j;
-    for ( j=7 ; j>=0 ; j-- )
-    {
+    for ( j=7 ; j>=0 ; j-- ){
         binInt8[j] = n%2 ;
         n = n/2 ;
     }
 }
-void calcNextAdress(int baseDecInt4[],int *nextAdress4) // Rempli un tableau decPoint4 de la première adresse ip de la plage
-{
+void calcNextAdress(int baseDecInt4[],int *nextAdress4){ // Rempli un tableau decPoint4 de la première adresse ip de la plage
     int j;
-    for( j=0 ; j<4 ; j++ )
-    {
+    for( j=0 ; j<4 ; j++ ){
         nextAdress4[j] = baseDecInt4[j]; // On rentre l'adresse réseau dans nextAdress4
     }
 
-    for ( j=3 ; j>=0 ; j-- ) // On ajoute 1 pour avoir la première adresse ip disponible
-    {
-        if ( nextAdress4[j] < 255)
-        {
+    for ( j=3 ; j>=0 ; j-- ){ // On ajoute 1 pour avoir la première adresse ip disponible
+        if ( nextAdress4[j] < 255){
             nextAdress4[j] += 1;
             break;
-        } else if ( nextAdress4[j] == 255)
-        {
+        } else if ( nextAdress4[j] == 255){
             nextAdress4[j] = 0;
         }
     }
 }
-void calcPreviousAdress(int baseDecInt4[],int *previousAdress4) //  Rempli un tableau decPoint4 de la dernière adresse ip de la plage
-{
+void calcPreviousAdress(int baseDecInt4[],int *previousAdress4){ //  Rempli un tableau decPoint4 de la dernière adresse ip de la plage
     int j;
-    for( j=0 ; j<4 ; j++ )
-    {
+    for( j=0 ; j<4 ; j++ ){
         previousAdress4[j] = baseDecInt4[j]; // On rentre l'adresse réseau dans previousAdress4
     }
 
-    for ( j=3 ; j>=0 ; j-- ) // On ajoute 1 pour avoir la première adresse ip disponible
-    {
-        if ( previousAdress4[j] > 0)
-        {
+    for ( j=3 ; j>=0 ; j-- ){ // On ajoute 1 pour avoir la première adresse ip disponible
+        if ( previousAdress4[j] > 0){
             previousAdress4[j] -= 1;
             break;
-        } else if ( previousAdress4[j] == 0)
-        {
+        } else if ( previousAdress4[j] == 0){
             previousAdress4[j] = 255;
         }
     }  
 }
-void calcNextNetwork(int networkBinInt32[],int maskBinInt32[],int *nextNetworkBinInt32,int *nextNetworkDecInt4) // Prend en entrée l'adresse reseau et le masque et rempli les tableaux nextNetworkDecInt4 et nextNetworkBinInt32
-{   // Prend en entrée l'adresse reseau et le masque 
+void calcNextNetwork(int networkBinInt32[],int maskBinInt32[],int *nextNetworkBinInt32,int *nextNetworkDecInt4){ // Prend en entrée l'adresse reseau et le masque et rempli les tableaux nextNetworkDecInt4 et nextNetworkBinInt32
+    // Prend en entrée l'adresse reseau et le masque 
     // Rempli les tableaux nextNetworkDecInt4 et nextNetworkBinInt32
 
     int temp=0,j,octet,pas,i;
     int nextNetworkBinInt8[8];
-    for( j=0 ; j<32 ; j++ )
-    {
+    for( j=0 ; j<32 ; j++ ){
         nextNetworkBinInt32[j] = networkBinInt32[j] && maskBinInt32[j];
     } 
     temp = -1 ; 
-    for( j=0 ; j<32 ; j++ )
-    {
-        if(maskBinInt32[j] == 1)
-        {
+    for( j=0 ; j<32 ; j++ ){
+        if(maskBinInt32[j] == 1){
             temp++;
         } else { break; }
     }
@@ -727,8 +655,7 @@ void calcNextNetwork(int networkBinInt32[],int maskBinInt32[],int *nextNetworkBi
         nextNetworkDecInt4[i] = valOctet(nextNetworkBinInt8);
     }
 }
-void convAdressBinToDec(int binInt32[],int *decInt4) // Convertit une adresse 32 bits en decimal pointé
-{
+void convAdressBinToDec(int binInt32[],int *decInt4){ // Convertit une adresse 32 bits en decimal pointé
     int i=0,j,temp=0;
     for ( j = 0; j < 4; ++j)
     {
@@ -749,33 +676,27 @@ void convAdressBinToDec(int binInt32[],int *decInt4) // Convertit une adresse 32
         }
     }
 }
-void Ad32To4(int binInt32[],int *decInt4) // Transforme une adresse 32 bits en decimal pointe
-{
+void Ad32To4(int binInt32[],int *decInt4){ // Transforme une adresse 32 bits en decimal pointe
     // WORKS!
     int j,k;
     int temp[8]; // Permet d'isoler un octet et de transformer sa valeu en decimal grace a la fonction binaireToBase10
-    for ( j = 0 ; j < 4 ; j++ )
-    {
-        for ( k = 0 ; k < 8 ; k++ )
-        {
+    for ( j = 0 ; j < 4 ; j++ ){
+        for ( k = 0 ; k < 8 ; k++ ){
             temp[k] = binInt32[j*8+k];
         }
         decInt4[j] = valOctet(temp);
     }
 }
-void Ad4To32(int decInt4[],int *binInt32) // Transforme une adresse en decimal pointe en adresse 32 bits
-{
+void Ad4To32(int decInt4[],int *binInt32){ // Transforme une adresse en decimal pointe en adresse 32 bits
     // WORKS!
     int binInt8[8];
     int j,k,n;
     int temp[8]; // Permet d'isoler un octet et de transformer sa valeu en decimal grace a la fonction binaireToBase10
     base10ToBinaire(192,binInt8);
-    for ( j = 0 ; j < 4 ; j++ )
-    {
+    for ( j = 0 ; j < 4 ; j++ ){
         n = decInt4[j] ;
         base10ToBinaire(n,binInt8);
-        for ( k = 0 ; k < 8 ; k++ )
-        {
+        for ( k = 0 ; k < 8 ; k++ ){
             binInt32[j*8+k] = binInt8[k];
         }
         printf("\n");
@@ -787,25 +708,21 @@ void saveAdress(int IpDecInt4[],int MaskDecInt4[]) {
     struct Reseau Res ; // Instanciation d'une structure Reseau  
 
     PtrFich = fopen("../output/reseau.dta","r"); // On tente d'ouvrir le fichier "reseau.dta" en lecture 
-    if ( PtrFich == NULL ) // Si le fichier n'existe pas
-    {
+    if ( PtrFich == NULL ){ // Si le fichier n'existe pas
         PtrFich = fopen("../output/reseau.dta","w "); // On l'ouvre avec l'option w, ce qui permet de le créer
         Res.numRes = 1 ;
-    } else 
-    {
+    } else {
         PtrFich = fopen("../output/reseau.dta","a"); // Sinon on l'ouvre avec l'option a (écriture en fin de fichier)
         pos = ftell(PtrFich); // On stock la position du curseur (donc de la fin du fichier) dans pos
         j = (int)(pos / (long) sizeof(Res));  // on calcul j+1 qui est égal au nombre de reseau stocké dans le fichier
         Res.numRes = j+1 ;                         // j = position du curseur / taille d'un Reseau
     }                                            // On cast le sizeof en long et le tout en int 
-    for (k=0;k<4;k++)
-    {
+    for (k=0;k<4;k++){
         Res.sIpDecInt4[k] = IpDecInt4[k];
         Res.sMaskDecInt4[k] = MaskDecInt4[k] ;
     }                                          
 
-    if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 )
-    {
+    if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ){
         printf("Problème d'écriture dans le fichier\n");
     } else {
         printf("Le réseau n°%d constitué de l'adresse ip %d.%d.%d.%d et du masque %d.%d.%d.%d a bien été sauvegardé dans un fichier \n",Res.numRes,Res.sIpDecInt4[0],Res.sIpDecInt4[1],Res.sIpDecInt4[2],Res.sIpDecInt4[3],Res.sMaskDecInt4[0],Res.sMaskDecInt4[1],Res.sMaskDecInt4[2],Res.sMaskDecInt4[3] );
@@ -871,8 +788,8 @@ void returnRes(int numRes,int *ipDecInt4,int *maskDecInt4){
     }
     fclose(PtrFich); // On ferme le fichier
 }
-void delSaveAdress(int numRes) // Supprime un réseau donné dans le fichier
-{ // DOING SUPPRESSION LOGIQUE NON TESTE TODO COMPACTAGE -> SUPPRESSION PHYSIQUE
+void delSaveAdress(int numRes){ // Supprime un réseau donné dans le fichier
+// DOING SUPPRESSION LOGIQUE NON TESTE TODO COMPACTAGE -> SUPPRESSION PHYSIQUE
     FILE *PtrFich;
     int compteur,compteur2;
     struct Reseau Res ; // Instanciation d'une structure Reseau  
@@ -883,8 +800,7 @@ void delSaveAdress(int numRes) // Supprime un réseau donné dans le fichier
         printf("Aucun fichier 'reseau.dta' éxiste\n");
     } else {
         compteur = 0 ;
-        while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ) // Tant que l'on peut lire encore 1 Res de taile struct Res dans PtrFich
-        {   
+        while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ){ // Tant que l'on peut lire encore 1 Res de taile struct Res dans PtrFich   
             compteur++; 
         } 
         // On positionne le curseur au début + numRes * taille Reseau 
@@ -897,28 +813,21 @@ void delSaveAdress(int numRes) // Supprime un réseau donné dans le fichier
             fseek(PtrFich,-1*sizeof( struct Reseau ),SEEK_CUR); // On redéplace le curseur devant le réseau à modifier
             Res.numRes = - 1 ; // Sinon on modifie le numéro du réseau à -1 (Supression Logique) 
             // On essai d'écrire les informations contenu dans Res, de taille struct Reseau, on écrit 1 Res, dans le fichier PtrFich
-            if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ) // On réécris le réseau avec le numéro -1
-            {
+            if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ){ // On réécris le réseau avec le numéro -1
                 printf("Problème d'écriture dans le fichier\nLe Fichier n'a pas été modifié");  // Si fwrite  renvoi -1 on met un message d'erreur car 
             } else {
-                            
-
-
                 printf("Compacter le fichier \n");
        
                 compteur = 0 ; // On initialise les numéros à redonner aux réseaux
-                while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ) // Tant que l'on peut lire encore 1 Res de taile struct Reseau dans PtrFich
-                {   
-                    if ( Res.numRes != -1 )
-                    {
+                while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ){ // Tant que l'on peut lire encore 1 Res de taile struct Reseau dans PtrFich   
+                    if ( Res.numRes != -1 ){
                         compteur++;  // On incrémente que si le réseau n'existe pas 
                     } else {
                         compteur2++;  // Sinon on incrémente un deuxième compteur pour avoir le trop plein de réseaux à supprimer
                     }
                     Res.numRes = compteur ; 
                     // On essai d'écrire les informations contenu dans Res, de taille struct Reseau, on écrit 1 Res, dans le fichier PtrFich
-                    if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ) // On réécris l'employé avec le matricule -1
-                    {
+                    if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ){ // On réécris l'employé avec le matricule -1
                         printf("Erreur d'écriture : oups! il y a eu un problème lors du compactage du fichier\n");  // Si fwrite  renvoi -1 on met un message d'erreur car 
                     }   
                 } 
@@ -928,13 +837,10 @@ void delSaveAdress(int numRes) // Supprime un réseau donné dans le fichier
         }                                                   
         fclose(PtrFich); // On ferme le fichier ouvert 
     }
-int valOctet(int binInt8[]) // Transforme une adresse 32 bits en decimal pointe
-{
+int valOctet(int binInt8[]){ // Transforme une adresse 32 bits en decimal pointe
     int j, res=0, n= 0;
-    for(j=7; j>=0; j--)
-    {
-       if ( binInt8[j] == 1 )
-        {
+    for(j=7; j>=0; j--){
+       if ( binInt8[j] == 1 ){
             res = res + (int) pow(2,n);
         }
         n++;
