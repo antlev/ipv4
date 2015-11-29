@@ -1,12 +1,11 @@
 /*
 *   PPE : Programme de gestion d'adresses IPV4
-*   Version : v2.1
+*   Version : v3.0
 *   Auteur :Antoine Levy SIO2
 *
 *   Notes : Pour compiler ce programme, il faut rajouter l'option -lm
 *   exemple : gcc ipv4.c -o ipv4 -lm
 *
-*   TODO : Revoir suppresion réseau dans un fichier
 */ 
 # include <stdio.h>
 # include <string.h>
@@ -55,6 +54,10 @@ main(){
     int sousResNetworkBinInt32[32],sousResFirstBinInt32[32],sousReslastBinInt32[32],sousResBroadBinInt32[32],sousResNextNetworkBinInt32[32]; // Permet de stocker des adresses ip en binaire
     char ipChar100[100],masqueChar100[100]; // Permet de stocker les saisies utilisateurs avant la vérification de la validité
     char point=0; // Permet de verifier la structure de l'adresse ip donnée
+
+    int nbSousRes,nbAdresses,temp2;
+    int nbAdressesTot;
+    double nbAdressesPossible ;
     for( j=0 ; j<4 ; j++ ){ // Initialisation des tableaux ip et masque à 0;
         ipDecInt4[j] = masqueDecInt4[j] = 0;
     }
@@ -62,8 +65,8 @@ main(){
         ipBinInt32[j] = masqueBinInt32[j] = 0 ;
     }
     sayHello();
-    while (choice != 9){
-        printf("\n");
+    while (choice != 10){
+        printf("\n"); // AFFICHAGE DU MENU PRINCIPAL
         printf("********************** MENU PRINCIPAL **********************\n");
         printf("Entrez une valeur correspondant a votre choix :\n");
         printf("1) Saisir une adresse ip en mémoire\n");
@@ -80,26 +83,26 @@ main(){
         printf("-------------------------------------------------------------\n");
         printf("10) Quitter\n");
         printf("************************************************************\n");
-        if ( checkIfAdressExist(ipDecInt4,0) == 1 ){
+        if ( checkIfAdressExist(ipDecInt4,0) == 1 ){  // Rappel l'ip en mémoire si elle éxiste
             printf("ip actuellement en mémoire :     ");
             printAdress4(ipDecInt4);
         } else printf("Aucune adresse ip n'est actuellement en mémoire\n");
         if ( checkIfAdressExist(masqueDecInt4,1) == 1 ){
-            printf("Masque actuellement en mémoire : ");
+            printf("Masque actuellement en mémoire : "); // Rappel le masque en mémoire si il éxiste
             printAdress4(masqueDecInt4) ;
         } else printf("Aucun masque n'est actuellement en mémoire\n");
-        if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(masqueDecInt4,1) == 1 ){
-            memNetworkAdresse(ipBinInt32,ipDecInt4,masqueBinInt32,masqueDecInt4,networkBinInt32,networkDecInt4);
-            printf("Adresse réseau calculée :        ");
+        if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(masqueDecInt4,1) == 1 ){ // Si on dispose d'une ip et d'un masque en mémoire
+            memNetworkAdresse(ipBinInt32,ipDecInt4,masqueBinInt32,masqueDecInt4,networkBinInt32,networkDecInt4); // On calcul l'adresse réseau...
+            printf("Adresse réseau calculée :        ");  //... et on l'affiche
             printAdress4(networkDecInt4);
         }
         printf("************************************************************\n");
         printf("->");
-        scanf("%d",&choice);
+        scanf("%d",&choice); // Permet de choisir l'option du menu à éxecuter
         switch (choice){
         case 1 :
         printf("****************** Saisie de l'adresse IP ******************\n");
-        if ( checkIfAdressExist(ipDecInt4,0) == 1 ) {
+        if ( checkIfAdressExist(ipDecInt4,0) == 1 ) { // Rappel l'ip en mémoire si elle éxiste
             printf("Adresse ip actuellement en mémoire\n");
             printAdress4(ipDecInt4);
         } else { printf("Aucune adresse ip n'est rentrée en mémoire\n");}
@@ -121,7 +124,7 @@ main(){
         switch (choice){
             case 1 :
             printf("************* Saisie du masque : Format Adresse *************\n");
-            if ( checkIfAdressExist(masqueDecInt4,1) == 1 ){
+            if ( checkIfAdressExist(masqueDecInt4,1) == 1 ){ // Rappel le masque en mémoire si il éxiste
                 printf("Masque actuellement en mémoire :\n");
                 printAdress4(masqueDecInt4) ;
             } else { printf("Aucun masque n'est actuellement rentré en mémoire\n") ; }
@@ -137,7 +140,7 @@ main(){
             break;
             case 2 :     
             printf("************** Saisie du masque : Format CIDR **************\n");
-            if ( checkIfAdressExist(masqueDecInt4,1) == 1 ){
+            if ( checkIfAdressExist(masqueDecInt4,1) == 1 ){ // Rappel le masque en mémoire si il éxiste
                 printf("Masque actuellement en mémoire :\n");
                 printAdress4(masqueDecInt4) ;
             }
@@ -147,7 +150,7 @@ main(){
             scanf("%d",&masquecidr);
             if ( masquecidr <= 0 || masquecidr > 31 ) printf("La valeur cidr du masque doit être comprise entre 0 et 32\n");
 
-            while ( masquecidr < 1 || masquecidr > 31 ){
+            while ( masquecidr < 1 || masquecidr > 31 ){ // On vérifie que le masque saisi ne dépasse pas les limites possibles
                 printf("Veuillez resaisir un masque en format cidr\n");
                 printf("->");
                 scanf("%d",&masquecidr);
@@ -178,9 +181,9 @@ main(){
         }
         break; 
         case 3 :
-        if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(masqueDecInt4,1) == 1 ){
+        if ( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(masqueDecInt4,1) == 1 ){ // On vérifie les paramètres en mémoire
             printf("**** Sauvegarde des paramètres actuellement en mémoire **** \n");
-            saveAdress(ipDecInt4,masqueDecInt4);
+            saveAdress(ipDecInt4,masqueDecInt4); // On sauvegarde les données en mémoire dans un fichier
         } else printf("Vous devez avoir une adresse ip et un masque valide rentré en mémoire pour les sauvegarder\n");
         break;
         case 4 :
@@ -189,30 +192,33 @@ main(){
             printf("->");
             scanf("%d",&resAAff);
             if ( resAAff == 0 ){
-                printSaveAdress();
+                printSaveAdress(); // Permet d'afficher tous les réseaux si l'utilisateur rentre 0
             } else {
-                printOneSaveAdress(resAAff);
+                printOneSaveAdress(resAAff); // Affiche le réseau voulu
             }
         break;
         case 5 :
             printf("*** Rentrer en mémoire un réseau stocké dans un fichier ***\n");
-            printf("Pour afficher les réseaux actuellement stocké dans un fichier rentrer 0\n");
+            printf("Pour afficher les réseaux actuellement stocké dans un fichier rentrer 0\n");                
+            printf("Quel réseau voulez vous rentrer en mémoire ? \n");
+            printf("Entrer le numéro de réseau correspondant\n");
             do {
-                printf("Quel réseau voulez vous rentrer en mémoire ? \n");
-                printf("Entrer le numéro de réseau correspondant\n");
                 printf("->");
-                scanf("%d",&choixres);
-                if ( choixres == 0 ) { printSaveAdress() ; }
-
-            } while ( choixres == 0 );  
-                returnSaveAdress(choixres,ipDecInt4,ipBinInt32,masqueDecInt4,masqueBinInt32); // On récupère le réseau voulu
+                scanf("%d",&choixres); 
+                printSaveAdress(); // Permet d'afficher tous les réseaux si l'utilisateur rentre 0
+            } while(choixres==0);
+            returnSaveAdress(choixres,ipDecInt4,ipBinInt32,masqueDecInt4,masqueBinInt32); // On récupère le réseau voulu
         break;
         case 6 :
             printf("Supprimer un réseau stocké dans un fichier\n");
-            printf("Quel réseau voulez vous supprimer ?");
-            printf("->");
-            scanf("%d",&resASupp);
-            delSaveAdress(resASupp);
+            resASupp = 0 ;
+            while(resASupp==0){
+                printf("Quel réseau voulez vous supprimer ?");
+                printf("->");
+                scanf("%d",&resASupp); 
+                printSaveAdress(); // Permet d'afficher tous les réseaux si l'utilisateur rentre 0
+            }
+            delSaveAdress(resASupp); // On supprime le réseau voulu
         break;
         case 7 :
             if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(masqueDecInt4,1) == 1){  // On vérifie que l'on dispose d'une ip et d'un masque valide en mémoire
@@ -279,9 +285,9 @@ main(){
                     }
                     printf("Votre valeur décimale : %d\n", valToConv);
                     printf("Conversion : " );
-                    base10ToBinaire(valToConv,tabBinInt8);
+                    base10ToBinaire(valToConv,tabBinInt8); // On rempli le tableau tabBinInt8 
                     for ( j=0 ; j<8 ; j++ ){
-                        printf("%d",tabBinInt8[j]);
+                        printf("%d",tabBinInt8[j]); // On affiche le tableau
                     }
                     printf("\n");
                 break;
@@ -289,9 +295,8 @@ main(){
                     printf("Quel est le nombre décimal à convertir en héxadécimal?\n");
                     printf("->");
                     scanf("%d",&valToConv);
-                    printf("%d vaut %X en héxadécimal\n",valToConv,valToConv);
+                    printf("%d vaut %X en héxadécimal\n",valToConv,valToConv); // Pas de conversion, on affiche le nombre en héxadécimal tout simplement
                 break;
-                    // REVOIR CES 2 POINTS
                 case 3 :
                     printf("Quel est le nombre binaire à convertir en décimal?\n");
                     j=valToConv=0;
@@ -321,7 +326,7 @@ main(){
                     printf("Quel est le nombre hexadécimal à convertir en décimal?\n");
                     printf("->");
                     scanf("%X",&valToConv);
-                    printf("%X vaut %d en décimal\n",valToConv,valToConv );
+                    printf("%X vaut %d en décimal\n",valToConv,valToConv ); // Pas de conversion, on affiche le nombre en décimal tout simplement
                 break;
                 case 6 :
                     printf("Quel est le nombre hexadécimal à convertir en binaire?\n");
@@ -347,130 +352,119 @@ main(){
         }     
         break;
         case 9 :
-        {
-            int nbSousRes,nbAdresses,temp2,masquecidr;
- 
-            int nbAdressesTot;
-            double nbAdressesPossible ;
-            nbAdressesTot = 0 ;
-            if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(masqueDecInt4,1) == 1){
+        nbAdressesTot = 0 ;
+        if( checkIfAdressExist(ipDecInt4,0) == 1 && checkIfAdressExist(masqueDecInt4,1) == 1){
 
-                printf("************************* SOUS-RESEAU ************************\n");
-                //Calcul du nombre d'adresses possible
-                temp2 = 0 ;
-                for( j = 31 ; j >= 0 ; j-- ){   
-                    if ( masqueBinInt32[j] == 0 ){
-                        temp2++ ;
-                    } else break ;
-                }
-                nbAdressesPossible = pow(2,temp2);
-                printf("RAPPEL : Votre plage vous permet de disposer de %f \n",nbAdressesPossible );
-                printf("Combien de sous-réseaux souhaitez vous créer ?\n");
+            printf("************************* SOUS-RESEAU ************************\n");
+            //Calcul du nombre d'adresses possible
+            temp2 = 0 ;
+            for( j = 31 ; j >= 0 ; j-- ){   
+                if ( masqueBinInt32[j] == 0 ){ // On parcourt le masque et on incrémente temp tant que l'on trouve des 0
+                    temp2++ ;
+                } else break ;
+            }
+            nbAdressesPossible = pow(2,temp2);  // nombre d'adresses possible = 2^(nombre de 0 dans le masque) = 2^temp
+            printf("RAPPEL : Votre plage vous permet de disposer de %f \n",nbAdressesPossible );
+            printf("Combien de sous-réseaux souhaitez vous créer ?\n");
+            printf("->");
+            scanf("%d",&nbSousRes); // On stock le nombre de sous-réseaux à faire
+            printf("Veuillez rentrer les sous réseau souhaité du PLUS GRAND au PLUS PETIT\n");
+            for( j = 0 ; j < nbSousRes ; j++ ){ // Pour chaque sous-réseau à créer on demande le nombrfe d'adresses
+                printf("Combien d'adresses doit contenir le sous-réseau n° %d ?\n",j+1 );
                 printf("->");
-                scanf("%d",&nbSousRes);
-                printf("Veuillez rentrer les sous réseau souhaité du PLUS GRAND au PLUS PETIT\n");
-                for( j = 0 ; j < nbSousRes ; j++ ){
-                    printf("Combien d'adresses doit contenir le sous-réseau n° %d ?\n",j+1 );
-                    printf("->");
-                    scanf("%d",&nbAdresses);
-                    nbAdresses += 2 ; // On ajoute l'adresse de broadcast et réseau à prendre en compte
-                    if ( j > 0 ){
-                        if( nbAdresses > nbAdressSousRes[j-1] ){
-                            printf("Vous venez de saisir un sous-réseau plus grand que le précédent :o\n");
-                            printf("Il est impératif de saisir les sous-réseaux du plus grand au plus petit\n");
-                            j = -1 ;
-                        }
+                scanf("%d",&nbAdresses);
+                nbAdresses += 2 ; // On ajoute l'adresse de broadcast et réseau à prendre en compte
+                if ( j > 0 ){
+                    if( nbAdresses > nbAdressSousRes[j-1] ){
+                        printf("Vous venez de saisir un sous-réseau plus grand que le précédent :o\n");
+                        printf("Il est impératif de saisir les sous-réseaux du plus grand au plus petit\n");
+                        j = -1 ;
                     }
-                    temp2 = 2 ;
-                    while ( nbAdresses > 1 ){
-                        temp2 *= 2 ;
-                        nbAdresses = nbAdresses/2 ;
-                    }
-                    nbAdressSousRes[j] = temp2;
-                    nbAdressesTot += temp2 ;
                 }
-                if ( nbAdressesPossible < nbAdressesTot ){ // Comparaison du nombre d'adresses possible avec le nombre d'adresses total
-                    printf("Vous ne pouvez pas rentrer autant d'adresses étant donnée votre plage\n");
-                    printf("Votre plage vous permet de disposer de %f \n",nbAdressesPossible );
-                    printf("Rappel : chaque sous-réseau nécessite de deux adresses supplémentaire (réseau et broadcast)\n");
-                } else { 
-                    for ( j = 0 ; j < 4 ; j++ ){
-                        sousResNetworkDecInt4[j] = networkDecInt4[j] ;
+                temp2 = 2 ;
+                while ( nbAdresses > 1 ){
+                    temp2 *= 2 ;
+                    nbAdresses = nbAdresses/2 ; // Permet de prendre en compte les adresses à faire en plus
+                }                               // (exemple: pour 200 adresses on doit utiliser un masque contenant 8 '0' donc 256 adresses et pas 200)
+                nbAdressSousRes[j] = temp2; // On stock ce nombre dans un tableau qui nous servira plus tard
+                nbAdressesTot += temp2 ; // et on ajoute zu total d'adresses nécessaire
+            }
+            if ( nbAdressesPossible < nbAdressesTot ){ // Comparaison du nombre d'adresses possible avec le nombre d'adresses total
+                printf("Vous ne pouvez pas rentrer autant d'adresses étant donnée votre plage\n");
+                printf("Votre plage vous permet de disposer de %f \n",nbAdressesPossible );
+                printf("Rappel : chaque sous-réseau nécessite de deux adresses supplémentaire (réseau et broadcast)\n");
+            } else { 
+                for ( j = 0 ; j < 4 ; j++ ){
+                    sousResNetworkDecInt4[j] = networkDecInt4[j] ; // On initialise l'adresse réseau du 1er sous réseau avec l'adresse réseau du réseau de base
+                }
+
+                printf("************************* SOUS-RESEAUX ************************\n");
+                printf("---------------------------------------------------------------\n");
+                printf("***************************************************************\n");
+                for ( j = 0 ; j < nbSousRes ; j++ ){   // POUR CHAQUE SOUS-RESEAU
+                    masquecidr = 32;
+                    for ( k = 0 ; k < 32 ; k++ ){
+                        masqueBin32[k] = 1 ;
+                    }
+                    k=31;
+                    while ( nbAdressSousRes[j] > 1 ){ // ON CALCUL LE MASQUE EN CIDR ET EN BINAIRE
+                            masqueBin32[k]=0 ;
+                            k--;
+                            masquecidr--;
+                            nbAdressSousRes[j] /= 2 ;
                     }
 
-                    printf("************************* SOUS-RESEAUX ************************\n");
-                    printf("---------------------------------------------------------------\n");
-                    printf("***************************************************************\n");
-                    for ( j = 0 ; j < nbSousRes ; j++ ){   
-                        masquecidr = 32;
-                        for ( k = 0 ; k < 32 ; k++ ){
-                            masqueBin32[k] = 1 ;
-                        }
-                        k=31;
-                        while ( nbAdressSousRes[j] > 1 ){
-                                masqueBin32[k]=0 ;
-                                k--;
-                                masquecidr--;
-                                nbAdressSousRes[j] /= 2 ;
-                        }
+                    //Calcul de la plage à reserver pour le sous réseau
+                    printf("----------------------- Sous-réseau n°%d -----------------------\n",j+1 );
+                    printf("Adresse Réseau : ");
+                    printAdress4(sousResNetworkDecInt4); // Adresse réseau comme initialisé
 
-                        //Calcul de la plage à reserver pour le sous réseau
-                        printf("----------------------- Sous-réseau n°%d -----------------------\n",j+1 );
-                        printf("Adresse Réseau : ");
-                        printAdress4(sousResNetworkDecInt4);
+                    calcNextAdress(sousResNetworkDecInt4,sousResFirstDecInt4); // Nextadress nous donne donc la première adresse utilisable
 
+                    printf("1ere adresse Ip disponible : ");                          
+                    printAdress4(sousResFirstDecInt4);
                     
-                        calcNextAdress(sousResNetworkDecInt4,sousResFirstDecInt4);
-
-                        printf("1ere adresse Ip disponible : ");                          
-                        printAdress4(sousResFirstDecInt4);
-                        
-                        Ad4To32(sousResNetworkDecInt4,sousResNetworkBinInt32); // On a besoin de l'adresse reseau en binaire pour calculer le prochain réseau
-                        calcNextNetwork(sousResNetworkBinInt32,masqueBin32,sousResNextNetworkBinInt32,sousResNextNetworkDecInt4);
-                        calcPreviousAdress(sousResNextNetworkDecInt4,sousResBroadDecInt4);
-
-                        printf("Dernière adresse Ip disponible : ");
-                        printAdress4(sousResBroadDecInt4);
-                        calcPreviousAdress(sousResBroadDecInt4,sousResLastDecInt4);
-                        printf("Adresse de Broadcast : ");
-                        printAdress4(sousResLastDecInt4);
-                        printf("Masquecidr = %d\n",masquecidr );
-                        printf("Masque en binaire : ");
-                        printAdress32(masqueBin32);
-                        printf("Masque en décimal pointé : " );
-                        printAdress4(masqueDec4);
-
-                        // On rentre les valeurs trouvées dans notre structure
-//                        SousRes.masquecidr = masquecidr ;
-//                        for(k=0;k<4;k++){
-//                            SousRes.netDecInt4[k] = sousResNetworkDecInt4[k];
-//                            SousRes.broadDecInt4[k] = sousResBroadDecInt4[k];
-//                        }
-                        // On initialise l'adresse reseau contenu dans sousResNetworkDecInt4 avec sousResNextNetworkDecInt4 pour le prochain sous réseau
-                        for(k=0;k<4;k++){
-                            sousResNetworkDecInt4[k] = sousResNextNetworkDecInt4[k];
-                        }
-                        printf("***************************************************************\n");
+                    Ad4To32(sousResNetworkDecInt4,sousResNetworkBinInt32); // On a besoin de l'adresse reseau en binaire pour calculer le prochain réseau
+                    calcNextNetwork(sousResNetworkBinInt32,masqueBin32,sousResNextNetworkBinInt32,sousResNextNetworkDecInt4); // On calcul le prochain réseau
+                    calcPreviousAdress(sousResNextNetworkDecInt4,sousResBroadDecInt4); // On calcul l'adresse d'avant le prochain réseau correspondant à l'adresse de broadcast
+                    calcPreviousAdress(sousResBroadDecInt4,sousResLastDecInt4); // On calcul l'adresse d'avant correspondant à la dernière adresse utilisable
+                    
+                    printf("Adresse de Broadcast : ");
+                    printAdress4(sousResBroadDecInt4);
+                    printf("Dernière adresse Ip disponible : ");
+                    printAdress4(sousResLastDecInt4);
+                    printf("Masquecidr = %d\n",masquecidr );
+                    printf("Masque en binaire : ");
+                    printAdress32(masqueBin32);
+                    Ad32To4(masqueBin32,masqueDec4);
+                    printf("Masque en décimal pointé : " );
+                    printAdress4(masqueDec4);
+                    // On initialise l'adresse reseau contenu dans sousResNetworkDecInt4 avec sousResNextNetworkDecInt4 pour le prochain sous réseau
+                    for(k=0;k<4;k++){
+                        sousResNetworkDecInt4[k] = sousResNextNetworkDecInt4[k];
                     }
-                    printf("---------------------------------------------------------------\n");
-                    printf("\n");
-
+                    printf("***************************************************************\n");
                 }
+                printf("---------------------------------------------------------------\n");
+                printf("\n");
 
-            } else { printf("Il faut avoir en mémoire une adresse ip et un masque valide pour avoir cette option\nVeuillez vérifier ces paramètres svp\n"); }
-        }
+            }
+
+        } else { printf("Il faut avoir en mémoire une adresse ip et un masque valide pour avoir cette option\nVeuillez vérifier ces paramètres svp\n"); }
         break;
         case 10 :
             printf("************************** SORTIE **************************\n");
             printf("Voulez vous vraiment quitter mon programme?? ;(\n");       
-            printf("( 10 ) pour confirmer ;(\n");
+            printf("Taper 0 pour annuler\n");
             printf("************************************************************\n");
             printf("->");
             scanf("%d",&choice);
-            if(choice==10){
+            if(choice==0){
+                break;
+            } else {
                 sayGoodBye();
-            } else break;
-        return;
+                return;
+            }
     
         default :
         break;
@@ -480,15 +474,15 @@ main(){
 //******************************************-Procédures-******************************************
 void sayHello(){
     printf("\n");
-    printf("*************************************************************\n");
+    printf("************************************************************\n");
     printf("Bonjour et bienvenue sur mon programme\n");
-    printf("*************************************************************\n");
+    printf("************************************************************\n");
 }
 void sayGoodBye(){
     printf("\n");
-    printf("**************************************************\n");
+    printf("************************************************************\n");
     printf("Au revoir et à bientôt :)\n");
-    printf("**************************************************\n");
+    printf("************************************************************\n");
 }
 void error(int code){
     switch(code){
@@ -543,15 +537,15 @@ void memAdress(char char100[], int *decInt4,int *binInt32, int ipOrMasque){ // E
         printf("Sauvegarde du masque %d.%d.%d.%d en mémoire \n",decInt4[0],decInt4[1],decInt4[2],decInt4[3]);
     }
 }
-void memNetworkAdresse(int ipBinInt32[],int ipDecInt4[],int masqueBinInt32[],int masqueDecInt4[], int *networkBinInt32, int *networkDecInt4){
+void memNetworkAdresse(int ipBinInt32[],int ipDecInt4[],int masqueBinInt32[],int masqueDecInt4[], int *networkBinInt32, int *networkDecInt4){ // Enregistre l'adresse réseau dans decInt et BinInt
     int j;
     for ( j=0 ; j<32 ; j++ )
     {
-        networkBinInt32[j] = ipBinInt32[j] & masqueBinInt32[j] ; // Et Logique entre l'adresse ip et le masque =  adresse reseau ( en bit )
+        networkBinInt32[j] = ipBinInt32[j] & masqueBinInt32[j] ; // "Et Logique" entre l'adresse ip et le masque =  adresse reseau ( en bit )
     }
     for ( j=0 ; j<4 ; j++ )
     {
-       networkDecInt4[j] = ipDecInt4[j] & masqueDecInt4[j] ;  // Et Logique entre l'adresse ip et le masque =  adresse reseau ( en décimal pointé )
+       networkDecInt4[j] = ipDecInt4[j] & masqueDecInt4[j] ;  // "Et Logique" entre l'adresse ip et le masque =  adresse reseau ( en décimal pointé )
     }
 }
 void printAdress4(int decInt4[]){ // Affiche une adresse en decimal pointé
@@ -604,9 +598,6 @@ void calcPreviousAdress(int baseDecInt4[],int *previousDecInt4){ //  Rempli un t
     }  
 }
 void calcNextNetwork(int networkBinInt32[],int masqueBinInt32[],int *nextNetworkBinInt32,int *nextNetworkDecInt4){ // Prend en entrée l'adresse reseau et le masque et rempli les tableaux nextNetworkDecInt4 et nextNetworkBinInt32
-    // Prend en entrée l'adresse reseau et le masque 
-    // Rempli les tableaux nextNetworkDecInt4 et nextNetworkBinInt32
-
     int temp=0,j,octet,pas,i;
     int nextNetworkBinInt8[8];
     for( j=0 ; j<32 ; j++ ){
@@ -664,25 +655,60 @@ void Ad4To32(int decInt4[],int *binInt32){ // Transforme une adresse en décimal
 }
 void saveAdress(int IpDecInt4[],int masqueDecInt4[]) { //  Enregistre l'adresse ip et le masque en cours dans un fichier
     FILE *PtrFich;
-    int pos,j,k;
+    int j,k;
+    long pos;
     struct Reseau Res ; // Instanciation d'une structure Reseau  
 
     PtrFich = fopen("../output/reseau.dta","r"); // On tente d'ouvrir le fichier "reseau.dta" en lecture 
     if ( PtrFich == NULL ){ // Si le fichier n'existe pas
         PtrFich = fopen("../output/reseau.dta","w "); // On l'ouvre avec l'option w, ce qui permet de le créer
         Res.numRes = 1 ;
+        printf("toto\n");
     } else {
-        PtrFich = fopen("../output/reseau.dta","a"); // Sinon on l'ouvre avec l'option a (écriture en fin de fichier)
+        // Je ne comprend pas pourquoi pos = 0 ???? alors que j'ouvre le fichier par la fin
+
+        /*PtrFich = fopen("../output/reseau.dta","a+"); // Sinon on l'ouvre avec l'option a (écriture en fin de fichier)
         pos = ftell(PtrFich); // On stock la position du curseur (donc de la fin du fichier) dans pos
-        j = (int)(pos / (long) sizeof(Res));  // on calcul j+1 qui est égal au nombre de reseau stocké dans le fichier
-        Res.numRes = j+1 ;                         // j = position du curseur / taille d'un Reseau
-    }                                            // On cast le sizeof en long et le tout en int 
-    for (k=0;k<4;k++){
+        printf("pos = %ld\n",pos );
+        j = (int)(pos / (long) sizeof(Res));  // j = position du curseur / taille d'un Reseau. On cast le sizeof en long et le tout en int 
+        printf("j=%d\n",j );*/ 
+        
+        // Solution de rechange qui m'oblige à parcourir le fichier en entier
+        PtrFich = fopen("../output/reseau.dta","r+");
+        fseek(PtrFich, 0, SEEK_END);
+        pos = ftell(PtrFich);
+        j = (int)(pos / (long) sizeof(Res));  // j = position du curseur / taille d'un Reseau. On cast le sizeof en long et le tout en int 
+        for(k=j;k>0;k--){
+            if(k==j){ // Premier tour de la boucle "for"
+                fseek(PtrFich,(-1) * sizeof(struct Reseau),SEEK_CUR ); // Au premier tour de la boucle for on revien de 1 réseau pour lire le dernier réseau
+                fread(&Res,sizeof(struct Reseau),1,PtrFich )  ;  // Lecture du dernier réseau
+                if(Res.numRes != -1){ // Si le dernier réseau n'est pas supprimé -> le réseau à enregister est le suivant
+                    Res.numRes = Res.numRes+1; // donc on ajoute plus 1 au réseau lu
+                    break;
+                } else if ( j == 1 ){ // Si au premier et dernier tour on a que des réseaux supprimés
+                    Res.numRes = 1 ; // On recommence à numéroté à 1
+                    break;
+                }                          
+            } else {
+                fseek(PtrFich,(-2) * sizeof(struct Reseau),SEEK_CUR ); // à partir du deuxième tour on recule de deux (en effet on a lu 1 réseau au tour de boucle d'avant donc avancé d'un réseau en plus)
+                fread(&Res,sizeof(struct Reseau),1,PtrFich )  ;  // On lit le réseau d'avant
+                if(Res.numRes != -1){ // Dès que l'on tombe sur un réseau supprimé on ajoute 1 au numRes et on sort de la boucle
+                    Res.numRes = Res.numRes+1;
+                    break;
+                }          
+            }
+            if(k==1){ // Si il n'y a que des réseaux supprimés jusqu'au dernier tour
+                Res.numRes = 1 ;
+                break;
+            }
+        }
+    }                                            
+    for (k=0;k<4;k++){ // On ajoute les paramètres au Res
         Res.sIpDecInt4[k] = IpDecInt4[k];
         Res.sMaskDecInt4[k] = masqueDecInt4[k] ;
     }                                          
 
-    if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ){
+    if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ){ // On écrit enfin le réseau
         printf("Problème d'écriture dans le fichier\n");
     } else {
         printf("\nLe réseau n°%d \nAdresse ip : %d.%d.%d.%d \nMasque : %d.%d.%d.%d \na bien été sauvegardé dans un fichier \n",Res.numRes,Res.sIpDecInt4[0],Res.sIpDecInt4[1],Res.sIpDecInt4[2],Res.sIpDecInt4[3],Res.sMaskDecInt4[0],Res.sMaskDecInt4[1],Res.sMaskDecInt4[2],Res.sMaskDecInt4[3] );
@@ -692,7 +718,7 @@ void saveAdress(int IpDecInt4[],int masqueDecInt4[]) { //  Enregistre l'adresse 
 
 void printSaveAdress(){ // Affiche les réseaux stockés dans un fichier
     FILE *PtrFich;
-    int pos,j;
+    int pos,j,resExist=0;
     struct Reseau Res ; // Instanciation d'une structure Reseau  
     PtrFich = fopen("../output/reseau.dta","r"); // On tente d'ouvrir le fichier "reseau.dta" en lecture 
     if ( PtrFich == NULL ) // Si le fichier n'existe pas
@@ -704,10 +730,14 @@ void printSaveAdress(){ // Affiche les réseaux stockés dans un fichier
         while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 )  // Tant que l'on peut lire encore 1 Res de taile struct Reseau dans PtrFich
         {   //On affiche les informations contenu dans le fichier
             if ( Res.numRes != -1){
+                resExist = 1 ;
                 printf("\nReseau n° %d\nAdresse IP : %d.%d.%d.%d\nMasque : %d.%d.%d.%d\n",Res.numRes,Res.sIpDecInt4[0],Res.sIpDecInt4[1],Res.sIpDecInt4[2],Res.sIpDecInt4[3],Res.sMaskDecInt4[0],Res.sMaskDecInt4[1],Res.sMaskDecInt4[2],Res.sMaskDecInt4[3] );
             }
         }
         fclose(PtrFich); // On ferme le fichier
+        if ( resExist == 0 ){
+            printf("Il n'y a que des réseaux supprimés dans le fichier\n");
+        }
     }
 }
 void printOneSaveAdress(int adressToPrint){ // Affiche le reseau voulu stocké dans un fichier
@@ -739,6 +769,13 @@ void returnSaveAdress(int numRes,int *ipDecInt4,int *ipBinInt32,int *masqueDecIn
     } else {   
         if ( fseek(PtrFich,(numRes-1) * sizeof(struct Reseau),SEEK_SET ) == 0 ){ // On se positionne devant le réseau à afficher à l'écran
             fread(&Res,sizeof(struct Reseau),1,PtrFich );
+            printf("Res.numRes = %d\n",Res.numRes );
+            if ( Res.numRes != numRes){
+                printf("Il y a eu un problème lors de la récupération du réseau %d\n",numRes );
+                printf("Veuillez vérifier l'existence de ce réseau\n");
+                printf("Le réseau a peut-être été supprimé\n");
+                return;
+            }
             for(i=0;i<4;i++){
                 ipDecInt4[i] = Res.sIpDecInt4[i]; // On écrit le réseau lu dans les tableaux passés en paramètres de la procédure
                 masqueDecInt4[i] = Res.sMaskDecInt4[i];
@@ -747,12 +784,11 @@ void returnSaveAdress(int numRes,int *ipDecInt4,int *ipBinInt32,int *masqueDecIn
             printf("Le réseau n°%d n'a pas pu être trouvé dans le fichier\n",numRes );
         }   
     }
-    Ad4To32(ipDecInt4,ipBinInt32);
-    Ad4To32(masqueDecInt4,masqueBinInt32);
+    Ad4To32(ipDecInt4,ipBinInt32); // On retourne l'ip en binaire aussi
+    Ad4To32(masqueDecInt4,masqueBinInt32); // On retourne le masque en binaire aussi
     fclose(PtrFich); // On ferme le fichier
 }
-void delSaveAdress(int numRes){ // Supprime un réseau donné dans le fichier
-// DOING SUPPRESSION LOGIQUE NON TESTE TODO COMPACTAGE -> SUPPRESSION PHYSIQUE
+void delSaveAdress(int resASupp){ // Supprime un réseau donné dans le fichier
     FILE *PtrFich;
     int compteur,compteur2;
     struct Reseau Res ; // Instanciation d'une structure Reseau  
@@ -761,45 +797,43 @@ void delSaveAdress(int numRes){ // Supprime un réseau donné dans le fichier
     if ( PtrFich == NULL ){ // Si le fichier est vide (ou n'existe pas)                      
         printf("Aucun fichier 'reseau.dta' éxiste\n"); // On affiche un message d'erreur
     } else {
+
         compteur = 0 ;
         while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ){ // Tant que l'on peut lire encore 1 Res de taile struct Res dans PtrFich   
             compteur++; 
         } 
-        // On positionne le curseur au début + numRes * taille Reseau 
+        // On positionne le curseur au début + resASupp * taille Reseau 
         //-> le curseur sera postionné devant le reseau à supprimer (note: on commence à numéroter les Reseau à partir de 1)
-        fseek(PtrFich,(numRes-1)*sizeof( struct Reseau),SEEK_SET);
+        fseek(PtrFich,(resASupp-1)*sizeof( struct Reseau),SEEK_SET);
         if ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) != 1 )  // Si on arrive pas à lire le réseau à supprimer
         {   // Message d'erreur 
-            printf("Erreur de lecture : Lecture du réseau n° %d a échoué\n", numRes); // On affiche un message d'erreur
+            printf("Erreur de lecture : Lecture du réseau n° %d a échoué\n", resASupp); // On affiche un message d'erreur
         } else {
             fseek(PtrFich,-1*sizeof( struct Reseau ),SEEK_CUR); // On redéplace le curseur devant le réseau à modifier
             Res.numRes = - 1 ; // Sinon on modifie le numéro du réseau à -1 (Supression Logique) 
             // On essai d'écrire les informations contenu dans Res, de taille struct Reseau, on écrit 1 Res, dans le fichier PtrFich
             if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ){ // On réécris le réseau avec le numéro -1
                 printf("Problème d'écriture dans le fichier\nLe Fichier n'a pas été modifié");  // Si fwrite  renvoi -1 on met un message d'erreur car 
-            } else {
-                printf("Compacter le fichier \n");
-       
-                compteur = 0 ; // On initialise les numéros à redonner aux réseaux
-                while ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) == 1 ){ // Tant que l'on peut lire encore 1 Res de taile struct Reseau dans PtrFich   
-                    if ( Res.numRes != -1 ){
-                        compteur++;  // On incrémente que si le réseau n'existe pas 
+            } else {                
+                fseek(PtrFich,(resASupp)*sizeof( struct Reseau),SEEK_SET);
+                do{
+                    if ( fread(&Res,sizeof(struct Reseau),1,PtrFich ) != 1 ){ // Si on arrive à la fin du  fichier
+                        break;
                     } else {
-                        compteur2++;  // Sinon on incrémente un deuxième compteur pour avoir le trop plein de réseaux à supprimer
+                        if(Res.numRes != -1 ){
+                            Res.numRes--;
+                        }
+                        fseek(PtrFich,(-2)*sizeof( struct Reseau),SEEK_CUR);
+                        fwrite(&Res,sizeof(struct Reseau),1,PtrFich );
+                        Res.numRes = -1 ;
+                        fwrite(&Res,sizeof(struct Reseau),1,PtrFich );                   
                     }
-                    Res.numRes = compteur ; 
-                    // On essai d'écrire les informations contenu dans Res, de taille struct Reseau, on écrit 1 Res, dans le fichier PtrFich
-                    if ( fwrite(&Res,sizeof(struct Reseau),1,PtrFich ) == -1 ){ // On réécris l'employé avec le matricule -1
-                        printf("Erreur d'écriture : oups! il y a eu un problème lors du compactage du fichier\n");  // Si fwrite  renvoi -1 on met un message d'erreur car 
-                    }   
-                } 
+                } while(Res.numRes != -1);
             }
-            printf("Fin du compactage du fichier\n");
-            }                                                                                   
-        }                                                   
-        fclose(PtrFich); // On ferme le fichier ouvert 
-    }
-
+        }                                                                                   
+    }                                                   
+    fclose(PtrFich); // On ferme le fichier ouvert 
+}
 //******************************************-Fonctions-******************************************
 int valOctet(int binInt8[]){ // Prend en entrée un tableau de 8 bits (un octet) et renvoi sa valeur en décimal
     int j, res=0, n= 0;
